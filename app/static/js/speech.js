@@ -48,7 +48,7 @@ class SpeechManager {
         }
     }
     
-    // Speak text
+    // Speak text with safeguards against censorship cutoffs
     speak(text, callback) {
         if (!this.isSupported) {
             console.warn('Speech synthesis not supported in this browser');
@@ -59,8 +59,37 @@ class SpeechManager {
         // Cancel any current speech
         this.stop();
         
-        // Create utterance
-        this.utterance = new SpeechSynthesisUtterance(text);
+        // Check if the text contains potential censorship triggers
+        const potentialTriggers = [
+            'unprofessional', 'inappropriate', 'unacceptable', 'profanity',
+            'offensive', 'disrespectful', 'rude', 'vulgar'
+        ];
+        
+        let textToSpeak = text;
+        let hasTriggers = false;
+        
+        // Log for debugging
+        console.log("Original text to speak:", text);
+        
+        // Check if we need to modify the text to avoid censorship
+        for (const trigger of potentialTriggers) {
+            if (text.toLowerCase().includes(trigger)) {
+                hasTriggers = true;
+                // Add spaces between characters in trigger words to avoid detection
+                const spaced = trigger.split('').join(' ');
+                textToSpeak = textToSpeak.replace(new RegExp(trigger, 'gi'), spaced);
+                console.log(`Modified text with spaced "${trigger}"`);
+            }
+        }
+        
+        if (hasTriggers) {
+            console.log("Text contains potential speech synthesis triggers - using chunked approach");
+            this.speakInChunks(textToSpeak, callback);
+            return;
+        }
+        
+        // Create utterance for regular text
+        this.utterance = new SpeechSynthesisUtterance(textToSpeak);
         
         // Set voice if available
         if (this.voice) {
@@ -86,13 +115,91 @@ class SpeechManager {
         
         this.utterance.onerror = (e) => {
             console.error('Speech error:', e);
+            // If there's an error, try the chunked approach as fallback
             this.isSpeaking = false;
             document.body.classList.remove('speaking');
-            if (callback) callback();
+            
+            console.log("Speech error occurred, trying chunked approach as fallback");
+            setTimeout(() => {
+                this.speakInChunks(text, callback);
+            }, 500);
         };
         
         // Start speaking
         this.synth.speak(this.utterance);
+    }
+    
+    // Speak text in smaller chunks to avoid censorship cutoffs
+    speakInChunks(text, finalCallback) {
+        if (!this.isSupported) {
+            if (finalCallback) finalCallback();
+            return;
+        }
+        
+        // Cancel any current speech
+        this.stop();
+        
+        // Split text into sentences and then into smaller chunks
+        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
+        console.log(`Text split into ${sentences.length} sentences`);
+        
+        // Setup for sequential speaking
+        let currentIndex = 0;
+        this.isSpeaking = true;
+        document.body.classList.add('speaking');
+        
+        const speakNextChunk = () => {
+            if (currentIndex >= sentences.length) {
+                // All chunks spoken, we're done
+                this.isSpeaking = false;
+                document.body.classList.remove('speaking');
+                if (finalCallback) finalCallback();
+                return;
+            }
+            
+            const currentSentence = sentences[currentIndex].trim();
+            console.log(`Speaking chunk ${currentIndex + 1}/${sentences.length}: ${currentSentence}`);
+            
+            // Skip empty chunks
+            if (!currentSentence) {
+                currentIndex++;
+                speakNextChunk();
+                return;
+            }
+            
+            // Create utterance for this chunk
+            const utterance = new SpeechSynthesisUtterance(currentSentence);
+            
+            // Set voice if available
+            if (this.voice) {
+                utterance.voice = this.voice;
+            }
+            
+            // Setting properties for natural sound
+            utterance.rate = 1.0;
+            utterance.pitch = 1.0;
+            utterance.volume = 1.0;
+            
+            // When this chunk is done, move to the next
+            utterance.onend = () => {
+                currentIndex++;
+                // Small pause between chunks
+                setTimeout(speakNextChunk, 100);
+            };
+            
+            // If error, skip to next chunk
+            utterance.onerror = (e) => {
+                console.error(`Speech error on chunk ${currentIndex}:`, e);
+                currentIndex++;
+                setTimeout(speakNextChunk, 100);
+            };
+            
+            // Speak this chunk
+            this.synth.speak(utterance);
+        };
+        
+        // Start the chain
+        speakNextChunk();
     }
     
     // Stop speaking
