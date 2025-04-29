@@ -38,6 +38,14 @@ def create_app(test_config=None):
     login_manager.login_view = 'auth.login'
     login_manager.login_message = 'Please log in to access this page.'
     login_manager.login_message_category = 'info'
+    
+    # Register custom template filters
+    @app.template_filter('nl2br')
+    def nl2br_filter(s):
+        """Convert newlines to <br> tags for HTML display"""
+        if s is None:
+            return ""
+        return s.replace('\n', '<br>')
 
     # Create database tables
     with app.app_context():

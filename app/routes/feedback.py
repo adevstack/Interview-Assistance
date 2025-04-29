@@ -32,7 +32,7 @@ def answer(answer_id):
     next_question = Question.get_current_question(session.id)
     
     return render_template(
-        'feedback.html',
+        'chat_feedback.html',
         answer=answer,
         question=question,
         session=session,

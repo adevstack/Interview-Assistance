@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block title %}Answer Feedback - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('interview.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{{ url_for('interview.start', interview_id=interview.id) }}">{{ interview.title }}</a></li>
+                <li class="breadcrumb-item active">Feedback</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3">
+            <i class="fas fa-comments me-2"></i>Feedback
+        </h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        {% if has_next %}
+        <a href="{{ url_for('interview.session', interview_id=interview.id, session_id=session.id) }}" class="btn btn-primary">
+            <i class="fas fa-arrow-right me-2"></i>Continue Interview
+        </a>
+        {% else %}
+        <a href="{{ url_for('interview.start', interview_id=interview.id) }}" class="btn btn-primary">
+            <i class="fas fa-arrow-right me-2"></i>Next Session
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Chat Interface -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Interview Conversation</h5>
+    </div>
+    <div class="card-body">
+        <div id="chat-container" class="chat-container mb-4">
+            <!-- Question -->
+            <div class="chat-message interviewer">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>{{ question.text }}</p>
+                </div>
+            </div>
+            
+            <!-- User's answer -->
+            <div class="chat-message user">
+                <div class="message-avatar">
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="message-content">
+                    <p>{{ answer.text|nl2br }}</p>
+                </div>
+            </div>
+            
+            <!-- Feedback -->
+            <div class="chat-message interviewer">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    {% if answer.feedback %}
+                    <p>{{ answer.feedback|nl2br }}</p>
+                    {% else %}
+                    <p>Thank you for your response. Let's move on to the next question.</p>
+                    {% endif %}
+                    
+                    {% if has_next %}
+                    <p>Ready for the next question?</p>
+                    {% else %}
+                    <p>That completes this session. Let's move on to the next part of the interview.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Feedback Details -->
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Performance Analysis</h5>
+                <span class="badge {% if answer.score >= 80 %}bg-success{% elif answer.score >= 60 %}bg-primary{% elif answer.score >= 40 %}bg-warning{% else %}bg-danger{% endif %}">
+                    {{ answer.score|round|int }}%
+                </span>
+            </div>
+            <div class="card-body">
+                <div class="performance-metrics">
+                    <!-- Completeness -->
+                    <div class="metric-item mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Completeness</span>
+                            <span>{{ answer.completeness|round|int }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-primary" role="progressbar" style="width: {{ answer.completeness }}%;" 
+                                aria-valuenow="{{ answer.completeness }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Relevance -->
+                    <div class="metric-item mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Relevance</span>
+                            <span>{{ answer.relevance|round|int }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-success" role="progressbar" style="width: {{ answer.relevance }}%;" 
+                                aria-valuenow="{{ answer.relevance }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Structure -->
+                    <div class="metric-item mb-3">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Structure</span>
+                            <span>{{ answer.structure|round|int }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-info" role="progressbar" style="width: {{ answer.structure }}%;" 
+                                aria-valuenow="{{ answer.structure }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Grammar -->
+                    <div class="metric-item">
+                        <div class="d-flex justify-content-between mb-1">
+                            <span>Grammar & Clarity</span>
+                            <span>{{ answer.grammar_score|round|int }}%</span>
+                        </div>
+                        <div class="progress" style="height: 8px;">
+                            <div class="progress-bar bg-warning" role="progressbar" style="width: {{ answer.grammar_score }}%;" 
+                                aria-valuenow="{{ answer.grammar_score }}" aria-valuemin="0" aria-valuemax="100"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Improvement Suggestions</h5>
+            </div>
+            <div class="card-body">
+                {% if answer.improvement_suggestions %}
+                <div class="suggestions-list">
+                    {{ answer.improvement_suggestions|nl2br }}
+                </div>
+                {% else %}
+                <p class="text-muted">No specific improvement suggestions are available for this answer.</p>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if answer.grammar_issues %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-spell-check me-2"></i>Grammar & Language</h5>
+            </div>
+            <div class="card-body">
+                <div class="grammar-issues">
+                    {{ answer.grammar_issues|nl2br }}
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<div class="d-grid gap-2 col-md-8 mx-auto">
+    {% if has_next %}
+    <a href="{{ url_for('interview.session', interview_id=interview.id, session_id=session.id) }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-arrow-right me-2"></i>Continue to Next Question
+    </a>
+    {% else %}
+    <a href="{{ url_for('interview.start', interview_id=interview.id) }}" class="btn btn-primary btn-lg">
+        <i class="fas fa-arrow-right me-2"></i>Continue to Next Session
+    </a>
+    {% endif %}
+    <a href="{{ url_for('interview.dashboard') }}" class="btn btn-outline-secondary">
+        <i class="fas fa-home me-2"></i>Return to Dashboard
+    </a>
+</div>
+
+<style>
+    .chat-container {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: var(--surface-dark);
+        border-radius: 0.5rem;
+    }
+    
+    .chat-message {
+        display: flex;
+        margin-bottom: 1.5rem;
+    }
+    
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--surface-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .interviewer .message-avatar {
+        background-color: var(--accent-color);
+        color: #fff;
+    }
+    
+    .user .message-avatar {
+        background-color: var(--surface-light);
+        color: var(--accent-color);
+    }
+    
+    .message-content {
+        background-color: var(--surface);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        max-width: 80%;
+    }
+    
+    .interviewer .message-content {
+        background-color: var(--surface-light);
+    }
+    
+    .user .message-content {
+        background-color: var(--accent-color);
+        color: #fff;
+    }
+    
+    .message-content p:last-child {
+        margin-bottom: 0;
+    }
+    
+    .performance-metrics .metric-item {
+        margin-bottom: 1.25rem;
+    }
+    
+    .suggestions-list {
+        font-size: 0.95rem;
+    }
+    
+    .grammar-issues {
+        font-size: 0.95rem;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Scroll chat to bottom on page load
+        const chatContainer = document.getElementById('chat-container');
+        if (chatContainer) {
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+    });
+</script>
+{% endblock %}

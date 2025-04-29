@@ -108,8 +108,16 @@ def get_questions_for_category(category, role, num_questions=5):
     """Get a set of questions for a specific category and role."""
     # Check if this is a custom role (not in predefined list)
     if role not in INTERVIEW_STAGES:
+        # First try using OpenAI to generate role-specific questions
+        from app.utils.openai_integration import generate_interview_questions, is_openai_available
+        
+        if is_openai_available():
+            ai_questions = generate_interview_questions(role, category, num_questions)
+            if ai_questions and len(ai_questions) >= 3:  # Ensure we have at least 3 questions
+                return ai_questions
+        
         try:
-            # Try to scrape questions for this custom role
+            # If OpenAI not available, try to scrape questions for this custom role
             scraped_questions = scrape_interview_questions(role, category, num_questions)
             if scraped_questions and len(scraped_questions) >= 3:  # Ensure we have at least 3 questions
                 return scraped_questions

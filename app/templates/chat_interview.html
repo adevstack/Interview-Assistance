@@ -1,0 +1,277 @@
+{% extends 'base.html' %}
+
+{% block title %}Interview Session - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('interview.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item">{{ interview.title }}</li>
+                {% for prev_session in previous_sessions %}
+                <li class="breadcrumb-item"><a href="#">{{ prev_session.category|title }}</a></li>
+                {% endfor %}
+                <li class="breadcrumb-item active">{{ session.category|title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3">
+            {% if session.category == 'warmup' %}
+            <i class="fas fa-coffee me-2"></i>
+            {% elif session.category == 'technical' %}
+            <i class="fas fa-code me-2"></i>
+            {% elif session.category == 'behavioral' %}
+            <i class="fas fa-users me-2"></i>
+            {% elif session.category == 'situational' %}
+            <i class="fas fa-comments me-2"></i>
+            {% else %}
+            <i class="fas fa-question-circle me-2"></i>
+            {% endif %}
+            {{ session.category|title }} Interview
+        </h2>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="interview-controls">
+            <button id="toggleVoice" class="btn btn-outline-primary me-2">
+                <i class="fas fa-microphone"></i> Voice Input
+            </button>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                <i class="fas fa-times"></i> End Interview
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Progress bar -->
+<div class="progress mb-4" style="height: 10px;">
+    <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" 
+         aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+    </div>
+</div>
+<p class="text-end text-muted small mb-4">Question {{ answered_questions + 1 }} of {{ total_questions }}</p>
+
+<!-- Chat Interface -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-comments me-2"></i>Interview Conversation</h5>
+    </div>
+    <div class="card-body">
+        <div id="chat-container" class="chat-container mb-4">
+            <!-- Welcome message -->
+            <div class="chat-message interviewer">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>Welcome to your {{ session.category }} interview for {{ interview.role|replace('_', ' ')|title }}! I'll be asking you a series of questions to help you practice.</p>
+                    <p>Let's begin with the first question...</p>
+                </div>
+            </div>
+            
+            <!-- Current question -->
+            <div class="chat-message interviewer">
+                <div class="message-avatar">
+                    <i class="fas fa-robot"></i>
+                </div>
+                <div class="message-content">
+                    <p>{{ question.text }}</p>
+                    {% if session.category == 'behavioral' %}
+                    <p class="small text-muted">Remember to use the STAR method in your answer: Situation, Task, Action, Result.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Answer Form -->
+        <form id="answerForm" method="post">
+            <div class="input-group mb-3">
+                <textarea id="answer" name="answer" class="form-control" 
+                       placeholder="Type your answer here..." required rows="3"></textarea>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+            <div id="voiceStatus" class="d-none alert alert-info">
+                <i class="fas fa-microphone"></i> Voice input is active. Speak clearly...
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Interview Tips -->
+<div class="card">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Interview Tips</h5>
+        <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#tipsList">
+            <i class="fas fa-chevron-down"></i>
+        </button>
+    </div>
+    <div id="tipsList" class="collapse show">
+        <div class="card-body">
+            {% if session.category == 'warmup' %}
+            <ul>
+                <li>Be concise but thorough</li>
+                <li>Highlight relevant aspects of your background</li>
+                <li>Show enthusiasm for the role</li>
+                <li>Connect your answer to the position you're applying for</li>
+            </ul>
+            {% elif session.category == 'technical' %}
+            <ul>
+                <li>Start by explaining your understanding of the concept</li>
+                <li>Use specific examples from your experience</li>
+                <li>Discuss pros and cons when applicable</li>
+                <li>Break down complex problems into smaller steps</li>
+                <li>Think out loud to show your problem-solving process</li>
+            </ul>
+            {% elif session.category == 'behavioral' %}
+            <ul>
+                <li><strong>S</strong>ituation: Describe the context and background</li>
+                <li><strong>T</strong>ask: Explain your responsibility in that situation</li>
+                <li><strong>A</strong>ction: Detail the specific actions you took</li>
+                <li><strong>R</strong>esult: Share the outcomes and what you learned</li>
+                <li>Use specific metrics when possible to quantify your impact</li>
+            </ul>
+            {% elif session.category == 'situational' %}
+            <ul>
+                <li>Consider multiple approaches to the scenario</li>
+                <li>Explain your decision-making process</li>
+                <li>Demonstrate problem-solving and critical thinking</li>
+                <li>Show how you would communicate with stakeholders</li>
+                <li>Discuss how you would measure success</li>
+            </ul>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">End Interview?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to end this interview? Your progress will be saved, but the interview will be marked as abandoned.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Interview</button>
+                <form action="{{ url_for('interview.cancel_interview', interview_id=interview.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">End Interview</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-container {
+        max-height: 400px;
+        overflow-y: auto;
+        padding: 1rem;
+        background-color: var(--surface-dark);
+        border-radius: 0.5rem;
+    }
+    
+    .chat-message {
+        display: flex;
+        margin-bottom: 1.5rem;
+    }
+    
+    .message-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background-color: var(--surface-light);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .interviewer .message-avatar {
+        background-color: var(--accent-color);
+        color: #fff;
+    }
+    
+    .user .message-avatar {
+        background-color: var(--surface-light);
+        color: var(--accent-color);
+    }
+    
+    .message-content {
+        background-color: var(--surface);
+        padding: 1rem;
+        border-radius: 0.5rem;
+        max-width: 80%;
+    }
+    
+    .interviewer .message-content {
+        background-color: var(--surface-light);
+    }
+    
+    .user .message-content {
+        background-color: var(--accent-color);
+        color: #fff;
+    }
+    
+    .message-content p:last-child {
+        margin-bottom: 0;
+    }
+</style>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize voice input
+        const voiceToggle = document.getElementById('toggleVoice');
+        const answerTextarea = document.getElementById('answer');
+        const voiceStatus = document.getElementById('voiceStatus');
+        const chatContainer = document.getElementById('chat-container');
+        
+        // Show browser compatibility message if needed
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            voiceToggle.disabled = true;
+            voiceToggle.title = 'Voice input not supported in your browser';
+        } else {
+            initVoiceInput(voiceToggle, answerTextarea, voiceStatus);
+        }
+        
+        // Handle form submission to add user message to chat
+        const answerForm = document.getElementById('answerForm');
+        answerForm.addEventListener('submit', function(e) {
+            // Don't prevent default since we want the form to submit
+            
+            // Add user message to chat
+            const userMessage = answerTextarea.value.trim();
+            if (userMessage) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = 'chat-message user';
+                messageDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-user"></i>
+                    </div>
+                    <div class="message-content">
+                        <p>${userMessage.replace(/\n/g, '<br>')}</p>
+                    </div>
+                `;
+                chatContainer.appendChild(messageDiv);
+                
+                // Scroll to bottom
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }
+        });
+        
+        // Initially scroll to bottom
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    });
+</script>
+{% endblock %}

@@ -212,8 +212,9 @@ def session(interview_id, session_id):
         status='completed'
     ).order_by(InterviewSession.stage_order).all()
     
+    # Use the conversational chat interface template
     return render_template(
-        'interview.html',
+        'chat_interview.html',
         interview=interview,
         session=session,
         question=current_question,
