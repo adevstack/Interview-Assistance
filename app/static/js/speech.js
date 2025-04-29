@@ -80,11 +80,10 @@ class SpeechManager {
             }
         }
         
-        if (hasTriggers) {
-            console.log("Text contains potential speech synthesis triggers - using chunked approach");
-            this.speakInChunks(textToSpeak, callback);
-            return;
-        }
+        // Always use chunked approach for safety, no filtering of words
+        console.log("Using chunked approach for all text to avoid filtering");
+        this.speakInChunks(text, callback);
+        return;
         
         // Create utterance for regular text
         this.utterance = new SpeechSynthesisUtterance(textToSpeak);
@@ -137,9 +136,25 @@ class SpeechManager {
         // Cancel any current speech
         this.stop();
         
-        // Split text into sentences and then into smaller chunks
-        const sentences = text.split(/[.!?]+/).filter(s => s.trim().length > 0);
-        console.log(`Text split into ${sentences.length} sentences`);
+        // Just break up into even smaller chunks - no word modification
+        // Split text not just at sentences but at commas and other natural pauses
+        const chunks = [];
+        const rawSentences = text.split(/[.!?]+/);
+        
+        // Further split sentences at natural pauses
+        for (const sentence of rawSentences) {
+            if (sentence.trim().length === 0) continue;
+            
+            // Split at commas and conjunctions 
+            const subChunks = sentence.split(/,|\sand\s|\sor\s|\sbut\s/);
+            for (const chunk of subChunks) {
+                if (chunk.trim().length > 0) {
+                    chunks.push(chunk.trim());
+                }
+            }
+        }
+        
+        console.log(`Text split into ${chunks.length} small chunks`);
         
         // Setup for sequential speaking
         let currentIndex = 0;
@@ -147,7 +162,7 @@ class SpeechManager {
         document.body.classList.add('speaking');
         
         const speakNextChunk = () => {
-            if (currentIndex >= sentences.length) {
+            if (currentIndex >= chunks.length) {
                 // All chunks spoken, we're done
                 this.isSpeaking = false;
                 document.body.classList.remove('speaking');
@@ -155,41 +170,19 @@ class SpeechManager {
                 return;
             }
             
-            let currentSentence = sentences[currentIndex].trim();
+            const currentChunk = chunks[currentIndex].trim();
             
             // Skip empty chunks
-            if (!currentSentence) {
+            if (!currentChunk) {
                 currentIndex++;
                 speakNextChunk();
                 return;
             }
             
-            // Apply subtle modifications to potentially problematic words
-            // - Introducing very slight character variations can bypass filters 
-            // - These are almost impossible to hear but avoid censorship
-            const problematicWords = [
-                { word: 'unprofessional', replacement: 'unprofessi\u200Conal' },
-                { word: 'inappropriate', replacement: 'inappropri\u200Cate' },
-                { word: 'unacceptable', replacement: 'unaccept\u200Cable' },
-                { word: 'profanity', replacement: 'profani\u200Cty' }
-            ];
+            console.log(`Speaking chunk ${currentIndex + 1}/${chunks.length}: "${currentChunk}"`);
             
-            // Apply the replacements
-            let modifiedSentence = currentSentence;
-            problematicWords.forEach(item => {
-                if (modifiedSentence.toLowerCase().includes(item.word)) {
-                    // Replace with a version containing zero-width characters that's phonetically identical
-                    modifiedSentence = modifiedSentence.replace(
-                        new RegExp(item.word, 'gi'),
-                        item.replacement
-                    );
-                }
-            });
-            
-            console.log(`Speaking chunk ${currentIndex + 1}/${sentences.length}: ${modifiedSentence}`);
-            
-            // Create utterance for this chunk
-            const utterance = new SpeechSynthesisUtterance(modifiedSentence);
+            // Create utterance for this chunk - NO modifications to words
+            const utterance = new SpeechSynthesisUtterance(currentChunk);
             
             // Set voice if available
             if (this.voice) {
