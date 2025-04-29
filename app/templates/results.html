@@ -201,8 +201,8 @@
                                     <p class="mb-2">{{ qa.answer.text }}</p>
                                     <div class="d-flex align-items-center">
                                         <div class="me-3">
-                                            <span class="badge bg-{% if qa.answer.score >= 80 %}success{% elif qa.answer.score >= 60 %}warning{% else %}danger{% endif %}">
-                                                Score: {{ qa.answer.score|round(1) if qa.answer.score else 'N/A' }}
+                                            <span class="badge bg-{% if qa.answer.score is not none %}{% if qa.answer.score >= 80 %}success{% elif qa.answer.score >= 60 %}warning{% else %}danger{% endif %}{% else %}secondary{% endif %}">
+                                                Score: {{ qa.answer.score|round(1) if qa.answer.score is not none else 'N/A' }}
                                             </span>
                                         </div>
                                         {% if qa.answer.feedback %}
@@ -234,7 +234,7 @@
         <h4 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommendations</h4>
     </div>
     <div class="card-body">
-        {% if interview.overall_score %}
+        {% if interview.overall_score is not none %}
             {% if interview.overall_score >= 80 %}
             <div class="alert alert-success mb-4">
                 <i class="fas fa-medal me-2"></i>
