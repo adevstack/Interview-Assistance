@@ -1,0 +1,121 @@
+Here is your updated and complete scaffold generation prompt, ready to be used with any code generation tool or framework like Replit, ensuring **robustness, completeness, and Cloudflare deployment compatibility**:
+
+---
+
+### ✅ **AI-Powered Interview App Scaffold Prompt**
+
+```
+I want to build an AI-powered interview preparation system with the following full-stack structure and requirements:
+
+---
+
+📦 **Core Structure**
+- Flask web application (factory pattern)
+- SQLAlchemy for ORM
+- Flask-Login for authentication
+- Deployment-ready ASGI support for Cloudflare
+- Dark theme Bootstrap UI:
+  - Background: #1a1b1e
+  - Surface: #2c2d30
+  - Primary Text: #e4e6ea
+  - Muted Text: #9da2a8
+  - Accent Color: #3b82f6
+  - Status Indicators: success/warning/danger
+- Responsive design, voice toggle, progress indicators
+
+---
+
+🔐 **Authentication System**
+- User registration, login, logout
+- Password hashing
+- User role preference (e.g., software_engineer, hr)
+
+---
+
+📊 **Interview Session Flow**
+- Multi-stage interviews based on role:
+  - Software Engineers: warmup, technical, behavioral
+  - Non-tech roles: warmup, behavioral, situational
+- Question categories: warmup, technical, behavioral
+- Answer collection
+- Real-time feedback generation
+
+---
+
+🧠 **AI Core Intelligence (UniModule)**
+- Role-specific question generation
+- STAR format evaluation using NLP
+- Sentiment analysis (TextBlob)
+- Grammar checking (language-tool-python)
+- Feedback scoring and report generation
+
+---
+
+📁 **Folder Structure**
+```
+project/
+├── app/
+│   ├── __init__.py  # create_app() function for app factory
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   ├── interview.py
+│   │   ├── question.py
+│   │   └── answer.py
+│   ├── routes/
+│   │   ├── __init__.py
+│   │   ├── auth.py
+│   │   ├── interview.py
+│   │   └── feedback.py
+│   ├── utils/
+│   │   ├── __init__.py
+│   │   ├── nlp_eval.py
+│   │   ├── sentiment.py
+│   │   ├── grammar.py
+│   │   └── interview_flow.py  # role-based stage mapping
+│   ├── templates/
+│   │   ├── base.html
+│   │   ├── login.html
+│   │   ├── register.html
+│   │   ├── dashboard.html
+│   │   ├── interview.html
+│   │   └── feedback.html
+│   ├── static/
+│   │   ├── css/
+│   │   │   └── style.css
+│   │   └── js/
+│   │       └── voice.js
+├── config.py  # loads config from environment variables
+├── run.py  # for local development only
+├── asgi.py  # for Cloudflare-compatible ASGI entrypoint
+├── requirements.txt
+├── wrangler.toml  # Cloudflare deployment config
+├── .env (excluded in .gitignore)
+├── .gitignore  # includes .env and __pycache__/
+├── README.md
+├── TODO.md
+```
+
+---
+
+🛠 **Required Python Packages**
+- flask, flask-login, flask-sqlalchemy
+- textblob, nltk, language-tool-python
+- gunicorn (or uvicorn for ASGI)
+- cloudflare-compatible ASGI setup
+
+---
+
+✅ **Prompt Enforcement Directive**
+**Ensure during scaffold generation:**
+- All templates listed are physically created
+- All routes return HTTP 200
+- No missing imports, undefined variables, or broken templates
+- All key features (auth, role logic, feedback, voice, history) are testable
+- Smoke or functional test mechanism is included (manual or `pytest`)
+- Role-specific interview stages are respected (e.g., no technical round for HR)
+- Scaffold is deployable to Cloudflare using `wrangler.toml` + `asgi.py`
+
+---
+
+Would you like this scaffold as a downloadable `.zip`, or directly initialized in Replit or GitHub?
