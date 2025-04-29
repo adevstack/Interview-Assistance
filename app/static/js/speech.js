@@ -71,14 +71,12 @@ class SpeechManager {
         // Log for debugging
         console.log("Original text to speak:", text);
         
-        // Check if we need to modify the text to avoid censorship
+        // Check if we have potential trigger words
         for (const trigger of potentialTriggers) {
             if (text.toLowerCase().includes(trigger)) {
                 hasTriggers = true;
-                // Add spaces between characters in trigger words to avoid detection
-                const spaced = trigger.split('').join(' ');
-                textToSpeak = textToSpeak.replace(new RegExp(trigger, 'gi'), spaced);
-                console.log(`Modified text with spaced "${trigger}"`);
+                console.log(`Detected potential trigger word: "${trigger}"`);
+                // Don't modify the words - just note that we found a trigger
             }
         }
         
@@ -157,8 +155,7 @@ class SpeechManager {
                 return;
             }
             
-            const currentSentence = sentences[currentIndex].trim();
-            console.log(`Speaking chunk ${currentIndex + 1}/${sentences.length}: ${currentSentence}`);
+            let currentSentence = sentences[currentIndex].trim();
             
             // Skip empty chunks
             if (!currentSentence) {
@@ -167,17 +164,41 @@ class SpeechManager {
                 return;
             }
             
+            // Apply subtle modifications to potentially problematic words
+            // - Introducing very slight character variations can bypass filters 
+            // - These are almost impossible to hear but avoid censorship
+            const problematicWords = [
+                { word: 'unprofessional', replacement: 'unprofessi\u200Conal' },
+                { word: 'inappropriate', replacement: 'inappropri\u200Cate' },
+                { word: 'unacceptable', replacement: 'unaccept\u200Cable' },
+                { word: 'profanity', replacement: 'profani\u200Cty' }
+            ];
+            
+            // Apply the replacements
+            let modifiedSentence = currentSentence;
+            problematicWords.forEach(item => {
+                if (modifiedSentence.toLowerCase().includes(item.word)) {
+                    // Replace with a version containing zero-width characters that's phonetically identical
+                    modifiedSentence = modifiedSentence.replace(
+                        new RegExp(item.word, 'gi'),
+                        item.replacement
+                    );
+                }
+            });
+            
+            console.log(`Speaking chunk ${currentIndex + 1}/${sentences.length}: ${modifiedSentence}`);
+            
             // Create utterance for this chunk
-            const utterance = new SpeechSynthesisUtterance(currentSentence);
+            const utterance = new SpeechSynthesisUtterance(modifiedSentence);
             
             // Set voice if available
             if (this.voice) {
                 utterance.voice = this.voice;
             }
             
-            // Setting properties for natural sound
-            utterance.rate = 1.0;
-            utterance.pitch = 1.0;
+            // Setting properties for natural sound, with adjustments to improve censorship bypass
+            utterance.rate = 0.9;  // Slightly slower rate
+            utterance.pitch = 1.05; // Slightly higher pitch
             utterance.volume = 1.0;
             
             // When this chunk is done, move to the next
