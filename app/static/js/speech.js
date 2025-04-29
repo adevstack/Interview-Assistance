@@ -136,25 +136,26 @@ class SpeechManager {
         // Cancel any current speech
         this.stop();
         
-        // Just break up into even smaller chunks - no word modification
-        // Split text not just at sentences but at commas and other natural pauses
-        const chunks = [];
-        const rawSentences = text.split(/[.!?]+/);
+        // Break into word-by-word chunks instead of sentences/phrases
+        // This is the most extreme approach but should prevent any filtering
+        const allWords = [];
         
-        // Further split sentences at natural pauses
-        for (const sentence of rawSentences) {
-            if (sentence.trim().length === 0) continue;
+        // First, split into words
+        const words = text.split(/\s+/);
+        for (let i = 0; i < words.length; i++) {
+            const word = words[i].trim();
+            if (word.length === 0) continue;
             
-            // Split at commas and conjunctions 
-            const subChunks = sentence.split(/,|\sand\s|\sor\s|\sbut\s/);
-            for (const chunk of subChunks) {
-                if (chunk.trim().length > 0) {
-                    chunks.push(chunk.trim());
-                }
+            // For longer text, try to speak 2-3 words together when possible
+            if (i < words.length - 2 && words[i].length + words[i+1].length < 15) {
+                allWords.push(`${words[i]} ${words[i+1]}`);
+                i++; // Skip the next word since we included it
+            } else {
+                allWords.push(word);
             }
         }
         
-        console.log(`Text split into ${chunks.length} small chunks`);
+        console.log(`Text split into ${allWords.length} word chunks`);
         
         // Setup for sequential speaking
         let currentIndex = 0;
@@ -162,7 +163,7 @@ class SpeechManager {
         document.body.classList.add('speaking');
         
         const speakNextChunk = () => {
-            if (currentIndex >= chunks.length) {
+            if (currentIndex >= allWords.length) {
                 // All chunks spoken, we're done
                 this.isSpeaking = false;
                 document.body.classList.remove('speaking');
@@ -170,28 +171,29 @@ class SpeechManager {
                 return;
             }
             
-            const currentChunk = chunks[currentIndex].trim();
+            const currentWord = allWords[currentIndex].trim();
             
             // Skip empty chunks
-            if (!currentChunk) {
+            if (!currentWord) {
                 currentIndex++;
                 speakNextChunk();
                 return;
             }
             
-            console.log(`Speaking chunk ${currentIndex + 1}/${chunks.length}: "${currentChunk}"`);
+            console.log(`Speaking chunk ${currentIndex + 1}/${allWords.length}: "${currentWord}"`);
             
-            // Create utterance for this chunk - NO modifications to words
-            const utterance = new SpeechSynthesisUtterance(currentChunk);
+            // Create utterance for this word chunk
+            const utterance = new SpeechSynthesisUtterance(currentWord);
             
             // Set voice if available
             if (this.voice) {
                 utterance.voice = this.voice;
             }
             
-            // Setting properties for natural sound, with adjustments to improve censorship bypass
-            utterance.rate = 0.9;  // Slightly slower rate
-            utterance.pitch = 1.05; // Slightly higher pitch
+            // Randomize speech parameters slightly for each chunk to bypass filtering
+            // This subtle variation helps avoid detection patterns
+            utterance.rate = 0.85 + (Math.random() * 0.2);  // Between 0.85 and 1.05
+            utterance.pitch = 0.95 + (Math.random() * 0.2); // Between 0.95 and 1.15
             utterance.volume = 1.0;
             
             // When this chunk is done, move to the next
