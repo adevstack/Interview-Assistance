@@ -50,6 +50,11 @@ def generate_question_feedback(answer_text, question_text, category, max_tokens=
     # The newest OpenAI model is "gpt-4o" which was released May 13, 2024.
     # do not change this unless explicitly requested by the user
     try:
+        # Check if we've encountered quota issues before
+        if hasattr(openai_client, '_quota_exceeded') and openai_client._quota_exceeded:
+            print("Skipping OpenAI API call due to previous quota exceeded error")
+            raise Exception("Quota exceeded")
+            
         response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -97,6 +102,10 @@ def generate_question_feedback(answer_text, question_text, category, max_tokens=
         return result
     except Exception as e:
         print(f"Error generating feedback with OpenAI: {e}")
+        # Mark the client as having quota issues if that's the error
+        if 'quota' in str(e).lower() or 'insufficient_quota' in str(e).lower():
+            openai_client._quota_exceeded = True
+            
         return {
             "feedback": "An error occurred while generating AI feedback. Please review your answer for completeness and relevance.",
             "completeness": 70,
@@ -135,6 +144,11 @@ def generate_interview_questions(role, category, num_questions=5):
     # The newest OpenAI model is "gpt-4o" which was released May 13, 2024.
     # do not change this unless explicitly requested by the user
     try:
+        # Check if we've encountered quota issues before
+        if hasattr(openai_client, '_quota_exceeded') and openai_client._quota_exceeded:
+            print("Skipping OpenAI API call due to previous quota exceeded error")
+            raise Exception("Quota exceeded")
+            
         response = openai_client.chat.completions.create(
             model="gpt-4o",
             messages=[
@@ -174,4 +188,7 @@ def generate_interview_questions(role, category, num_questions=5):
             
     except Exception as e:
         print(f"Error generating questions with OpenAI: {e}")
+        # Mark the client as having quota issues if that's the error
+        if 'quota' in str(e).lower() or 'insufficient_quota' in str(e).lower():
+            openai_client._quota_exceeded = True
         return []
