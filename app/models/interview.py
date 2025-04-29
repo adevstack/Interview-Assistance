@@ -75,6 +75,8 @@ class InterviewSession(db.Model):
     
     def get_average_score(self):
         """Calculate the average score for this session."""
+        from app.models.answer import Answer
+        
         avg_score = db.session.query(func.avg(Answer.score)).filter(Answer.session_id == self.id).scalar()
         return avg_score if avg_score is not None else 0
     
