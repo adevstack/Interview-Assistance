@@ -76,13 +76,35 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
                     bestTranscript = currentTranscript;
                 }
                 
-                // Look for keywords that might indicate unfiltered content
-                // Including keywords that suggest the content might have been filtered
-                const unfilteredKeywords = ['unprofessional', 'inappropriate', 'unacceptable', 'profanity'];
-                if (unfilteredKeywords.some(keyword => currentTranscript.toLowerCase().includes(keyword))) {
+                // Look for markers indicating potential content filtering/censoring
+                const censoringIndicators = [
+                    'unprofessional', 'inappropriate', 'unacceptable', 'profanity', 
+                    'demonstrates', 'lack of', 'workplace', 'setting', 'empathy',
+                    'judgment', 'immediately disqualify', 'candidate', 
+                    'shows no', 'understanding', 'address', 'constructively'
+                ];
+                
+                // Check if this transcript contains indicators of censored content
+                const containsCensoringIndicators = censoringIndicators.some(
+                    keyword => currentTranscript.toLowerCase().includes(keyword)
+                );
+                
+                if (containsCensoringIndicators) {
                     console.log(`Detected potential censoring in transcript: "${currentTranscript}"`);
-                    // Prioritize transcripts that mention these keywords as they might represent censored content
+                    // Prioritize transcripts that mention these keywords as they likely represent feedback about censored content
                     bestTranscript = currentTranscript;
+                    break;
+                }
+                
+                // Attempt to detect "stopped transcription" - common when speech recognition encounters censored content
+                if (currentTranscript.trim().endsWith('shows') || 
+                    currentTranscript.trim().endsWith('shows no') ||
+                    currentTranscript.trim().endsWith('...') ||
+                    currentTranscript.trim().endsWith('the answer shows')) {
+                    console.log(`Detected possibly truncated censored content: "${currentTranscript}"`);
+                    
+                    // Append a marker so the user knows transcription may have been cut off
+                    bestTranscript = currentTranscript + " [TRANSCRIPTION MAY BE INCOMPLETE DUE TO CONTENT FILTERING]";
                     break;
                 }
             }

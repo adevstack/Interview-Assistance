@@ -40,6 +40,9 @@
             <button id="toggleVoice" class="btn btn-outline-primary me-2">
                 <i class="fas fa-microphone"></i> Voice Input
             </button>
+            <button id="manualOverrideBtn" class="btn btn-outline-secondary me-2" data-bs-toggle="modal" data-bs-target="#censoredContentModal">
+                <i class="fas fa-exclamation-triangle"></i> Speech Not Working?
+            </button>
             <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
                 <i class="fas fa-times"></i> End Interview
             </button>
@@ -170,6 +173,38 @@
     </div>
 </div>
 
+<!-- Censored Content Modal -->
+<div class="modal fade" id="censoredContentModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Speech Recognition Issues</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-warning">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Having trouble with speech recognition?</strong>
+                </div>
+                <p>If the speech recognition is cutting off when you discuss potentially sensitive topics, this is due to browser-level content filtering. Some browsers filter out words or phrases they deem inappropriate.</p>
+                <p>To work around this limitation:</p>
+                <ol>
+                    <li>Type your complete answer in the text box below</li>
+                    <li>Click "Use This Text" to add it to your answer</li>
+                </ol>
+                <div class="form-group mb-3">
+                    <label for="manualText" class="form-label">Enter your complete answer:</label>
+                    <textarea id="manualText" class="form-control" rows="6" placeholder="Type your complete answer here..."></textarea>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" id="useManualTextBtn" class="btn btn-primary" data-bs-dismiss="modal">Use This Text</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <style>
     .chat-container {
         max-height: 400px;
@@ -244,6 +279,32 @@
             voiceToggle.title = 'Voice input not supported in your browser';
         } else {
             initVoiceInput(voiceToggle, answerTextarea, voiceStatus);
+        }
+        
+        // Handle manual text input from modal
+        const manualTextArea = document.getElementById('manualText');
+        const useManualTextBtn = document.getElementById('useManualTextBtn');
+        
+        if (useManualTextBtn && manualTextArea) {
+            useManualTextBtn.addEventListener('click', function() {
+                const manualText = manualTextArea.value.trim();
+                if (manualText) {
+                    // Set the text to the answer textarea
+                    answerTextarea.value = manualText;
+                    
+                    // Simulate user input to trigger any input events
+                    const inputEvent = new Event('input', { bubbles: true });
+                    answerTextarea.dispatchEvent(inputEvent);
+                    
+                    // Clear the manual text area for next use
+                    manualTextArea.value = '';
+                    
+                    // Focus on the main answer textarea
+                    setTimeout(() => {
+                        answerTextarea.focus();
+                    }, 100);
+                }
+            });
         }
         
         // Handle form submission to add user message to chat
