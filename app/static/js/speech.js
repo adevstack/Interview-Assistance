@@ -136,27 +136,53 @@ class SpeechManager {
         // Cancel any current speech
         this.stop();
         
-        // Split into larger meaningful phrases for more natural flow
-        // but still small enough to avoid content filtering
+        // Use complete sentences with natural punctuation
         const allPhrases = [];
         
-        // Break text into small sentences and phrases (3-5 words)
-        const sentences = text.split(/[.!?]+/);
+        // First, split by periods, question marks, and exclamation points
+        // to get complete sentences
+        const completeStatements = text.split(/([.!?]+)/);
         
-        for (const sentence of sentences) {
-            if (sentence.trim().length === 0) continue;
+        // Now we have alternating segments of text and punctuation
+        // Build full sentences by combining text with its punctuation
+        for (let i = 0; i < completeStatements.length - 1; i += 2) {
+            const sentenceText = completeStatements[i];
+            const punctuation = completeStatements[i + 1] || ".";
             
-            // Split larger sentences into smaller phrases
-            const words = sentence.trim().split(/\s+/);
-            const phraseSize = 4; // Target 4 words per phrase for natural flow
-            
-            for (let i = 0; i < words.length; i += phraseSize) {
-                // Create phrases of approximately phraseSize words
-                const phrase = words.slice(i, i + phraseSize).join(' ');
-                if (phrase.trim().length > 0) {
-                    allPhrases.push(phrase.trim());
+            if (sentenceText && sentenceText.trim().length > 0) {
+                // Complete sentence with its punctuation
+                const fullSentence = sentenceText.trim() + punctuation;
+                
+                // Split long sentences at commas if needed
+                if (fullSentence.length > 100) {
+                    const commaSplits = fullSentence.split(/([,;:]+)/);
+                    
+                    // Reconstruct comma-separated phrases
+                    for (let j = 0; j < commaSplits.length - 1; j += 2) {
+                        const phrase = commaSplits[j];
+                        const comma = commaSplits[j + 1] || "";
+                        
+                        if (phrase && phrase.trim().length > 0) {
+                            allPhrases.push(phrase.trim() + comma);
+                        }
+                    }
+                    
+                    // Add the last part if it exists
+                    const lastPart = commaSplits[commaSplits.length - 1];
+                    if (lastPart && lastPart.trim().length > 0) {
+                        allPhrases.push(lastPart.trim());
+                    }
+                } else {
+                    // Use the whole sentence as is
+                    allPhrases.push(fullSentence);
                 }
             }
+        }
+        
+        // Add any remaining text
+        const lastPart = completeStatements[completeStatements.length - 1];
+        if (lastPart && lastPart.trim().length > 0) {
+            allPhrases.push(lastPart.trim());
         }
         
         console.log(`Text split into ${allPhrases.length} phrase chunks`);
