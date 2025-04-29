@@ -109,17 +109,28 @@ def get_questions_for_category(category, role, num_questions=5):
     # Check if this is a custom role (not in predefined list)
     if role not in INTERVIEW_STAGES:
         # First try using OpenAI to generate role-specific questions
-        from app.utils.openai_integration import generate_interview_questions, is_openai_available
+        from app.utils.openai_integration import generate_interview_questions as openai_generate_questions, is_openai_available
+        from app.utils.gemini_integration import generate_interview_questions as gemini_generate_questions, is_gemini_available
         
+        # Try OpenAI first
         if is_openai_available():
-            ai_questions = generate_interview_questions(role, category, num_questions)
+            ai_questions = openai_generate_questions(role, category, num_questions)
             if ai_questions and len(ai_questions) >= 3:  # Ensure we have at least 3 questions
+                print(f"Using OpenAI-generated questions for {role}")
+                return ai_questions
+        
+        # If OpenAI fails or unavailable, try Gemini
+        if is_gemini_available():
+            ai_questions = gemini_generate_questions(role, category, num_questions)
+            if ai_questions and len(ai_questions) >= 3:  # Ensure we have at least 3 questions
+                print(f"Using Gemini-generated questions for {role}")
                 return ai_questions
         
         try:
-            # If OpenAI not available, try to scrape questions for this custom role
+            # If AI not available, try to scrape questions for this custom role
             scraped_questions = scrape_interview_questions(role, category, num_questions)
             if scraped_questions and len(scraped_questions) >= 3:  # Ensure we have at least 3 questions
+                print(f"Using web-scraped questions for {role}")
                 return scraped_questions
         except Exception as e:
             print(f"Error scraping questions for {role}: {e}")

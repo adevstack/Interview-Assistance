@@ -22,7 +22,8 @@ def evaluate_answer(answer_id):
     """Evaluate an answer using NLP techniques."""
     from app.models.answer import Answer
     from app.models.question import Question
-    from app.utils.openai_integration import generate_question_feedback, is_openai_available
+    from app.utils.openai_integration import generate_question_feedback as openai_generate_feedback, is_openai_available
+    from app.utils.gemini_integration import generate_question_feedback as gemini_generate_feedback, is_gemini_available
     
     answer = Answer.query.get(answer_id)
     if not answer:
@@ -38,11 +39,14 @@ def evaluate_answer(answer_id):
         set_minimal_feedback(answer, "Your answer is empty. Please provide a response.")
         return False
     
-    # Try using OpenAI for comprehensive evaluation
+    # Try using AI for comprehensive evaluation, preferring OpenAI if available, then Gemini
+    ai_failed = True
+    
+    # Try OpenAI first
     if is_openai_available():
         try:
-            # Get AI-generated feedback
-            ai_feedback = generate_question_feedback(
+            # Get AI-generated feedback from OpenAI
+            ai_feedback = openai_generate_feedback(
                 text,
                 question.text,
                 question.category
@@ -56,24 +60,50 @@ def evaluate_answer(answer_id):
             feedback = ai_feedback.get('feedback', "Thank you for your answer.")
             suggestions = ai_feedback.get('improvement_suggestions', "")
             
-            # Still run grammar check to get specific issues
-            grammar_issues, _ = check_grammar(text)
-            
-            # Analyze sentiment
-            sentiment_score, sentiment_label = analyze_sentiment(text)
+            # Mark AI as successful
+            ai_failed = False
+            print("Successfully used OpenAI for feedback")
             
         except Exception as e:
             print(f"Error using OpenAI for feedback: {e}")
-            # Fall back to basic NLP evaluation
-            ai_failed = True
-        else:
+            # Will fall back to Gemini or basic NLP evaluation
+    
+    # If OpenAI failed or isn't available, try Gemini
+    if ai_failed and is_gemini_available():
+        try:
+            # Get AI-generated feedback from Gemini
+            ai_feedback = gemini_generate_feedback(
+                text,
+                question.text,
+                question.category
+            )
+            
+            # Use AI-generated scores and feedback
+            completeness_score = ai_feedback.get('completeness', 70)
+            relevance_score = ai_feedback.get('relevance', 70)
+            structure_score = ai_feedback.get('structure', 70)
+            grammar_score = ai_feedback.get('grammar_score', 80)
+            feedback = ai_feedback.get('feedback', "Thank you for your answer.")
+            suggestions = ai_feedback.get('improvement_suggestions', "")
+            
+            # Mark AI as successful
             ai_failed = False
-    else:
-        # OpenAI not available
-        ai_failed = True
+            print("Successfully used Gemini for feedback")
+            
+        except Exception as e:
+            print(f"Error using Gemini for feedback: {e}")
+            # Will fall back to basic NLP evaluation
+    
+    # Run grammar check and sentiment analysis regardless of AI provider
+    if not ai_failed:
+        # Still run grammar check to get specific issues
+        grammar_issues, _ = check_grammar(text)
         
-    # Fall back to basic NLP evaluation if OpenAI fails or isn't available
-    if not is_openai_available() or ai_failed:
+        # Analyze sentiment
+        sentiment_score, sentiment_label = analyze_sentiment(text)
+    
+    # Fall back to basic NLP evaluation if both AI services fail or aren't available
+    if ai_failed:
         # Perform evaluations using basic NLP
         completeness_score = evaluate_completeness(text, question.text)
         relevance_score = evaluate_relevance(text, question.text)
