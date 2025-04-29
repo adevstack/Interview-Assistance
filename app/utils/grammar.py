@@ -38,32 +38,67 @@ def check_grammar(text):
     if not text:
         return "No text provided.", 0
     
+    # Limit text length to prevent timeout/memory issues
+    MAX_TEXT_LENGTH = 2000
+    if len(text) > MAX_TEXT_LENGTH:
+        text = text[:MAX_TEXT_LENGTH] + "..."
+        print(f"Grammar check: Text truncated to {MAX_TEXT_LENGTH} characters")
+    
     try:
         # Get LanguageTool instance
         tool = LanguageToolSingleton.get_instance()
         
-        # Check grammar
-        matches = tool.check(text)
+        # Set a short timeout for grammar check
+        if hasattr(tool, '_TIMEOUT'):
+            original_timeout = tool._TIMEOUT
+            tool._TIMEOUT = 2.0  # 2 seconds timeout
+            
+        try:
+            # Check grammar with timeout protection
+            matches = tool.check(text)
+            
+            # Restore original timeout if changed
+            if hasattr(tool, '_TIMEOUT'):
+                tool._TIMEOUT = original_timeout
+                
+        except Exception as check_error:
+            print(f"Grammar checking process failed: {check_error}")
+            return "Grammar check timed out or failed.", 70
+            
+        # Cap number of issues to analyze (for performance)
+        MAX_ISSUES = 5
+        matches = matches[:MAX_ISSUES] if len(matches) > MAX_ISSUES else matches
         
         # Extract issues
         issues = []
         for match in matches:
-            context = match.context
-            offset = match.offsetInContext
-            length = match.errorLength
-            
-            # Highlight the error in context
-            highlighted = (
-                context[:offset] + 
-                '**' + context[offset:offset+length] + '**' + 
-                context[offset+length:]
-            )
-            
-            issues.append({
-                'message': match.message,
-                'context': highlighted,
-                'replacements': match.replacements[:3] if match.replacements else []
-            })
+            try:
+                context = match.context if hasattr(match, 'context') else "Context not available"
+                offset = match.offsetInContext if hasattr(match, 'offsetInContext') else 0
+                length = match.errorLength if hasattr(match, 'errorLength') else 1
+                
+                # Highlight the error in context (with safety checks)
+                if context and 0 <= offset < len(context) and offset + length <= len(context):
+                    highlighted = (
+                        context[:offset] + 
+                        '**' + context[offset:offset+length] + '**' + 
+                        context[offset+length:]
+                    )
+                else:
+                    highlighted = context
+                
+                # Get message and replacements
+                message = match.message if hasattr(match, 'message') else "Error detected"
+                replacements = match.replacements[:3] if hasattr(match, 'replacements') and match.replacements else []
+                
+                issues.append({
+                    'message': message,
+                    'context': highlighted,
+                    'replacements': replacements
+                })
+            except Exception as issue_error:
+                print(f"Error processing grammar issue: {issue_error}")
+                continue
         
         # Format issues as text
         if issues:
@@ -81,8 +116,8 @@ def check_grammar(text):
             return "Text is too short for grammar analysis.", 0
         
         # Scale score based on error rate (errors per 100 words)
-        error_rate = len(matches) / word_count * 100
-        grammar_score = max(0, 100 - (error_rate * 10))  # Each error reduces score
+        error_rate = min(10, len(matches) / max(1, word_count) * 100)  # Cap error rate
+        grammar_score = max(0, min(100, 100 - (error_rate * 10)))  # Each error reduces score
         
         return issues_text, grammar_score
     

@@ -116,8 +116,20 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
         setTimeout(() => {
             if (isRecording) {
                 try {
-                    recognition.start();
-                    statusElement.textContent = 'Listening...';
+                    // First make sure recognition is stopped before restarting
+                    try {
+                        recognition.stop();
+                    } catch (stopError) {
+                        console.log('Ignore stop error during restart:', stopError);
+                    }
+                    
+                    // Wait a moment before restarting
+                    setTimeout(() => {
+                        if (isRecording) {
+                            recognition.start();
+                            statusElement.textContent = 'Listening...';
+                        }
+                    }, 100);
                 } catch (e) {
                     console.error('Error restarting recognition:', e);
                     stopRecording();
