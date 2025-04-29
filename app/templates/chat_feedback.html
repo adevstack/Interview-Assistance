@@ -265,12 +265,45 @@
 {% endblock %}
 
 {% block scripts %}
+<script src="{{ url_for('static', filename='js/speech.js') }}"></script>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Scroll chat to bottom on page load
         const chatContainer = document.getElementById('chat-container');
         if (chatContainer) {
             chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        // Initialize text-to-speech for feedback
+        if (typeof speechManager !== 'undefined') {
+            // Find the interviewer feedback message
+            const feedbackMessages = document.querySelectorAll('.chat-message.interviewer');
+            if (feedbackMessages.length > 0) {
+                // Get the feedback message (last interviewer message)
+                const feedbackMessage = feedbackMessages[feedbackMessages.length - 1];
+                
+                // Add a speech indicator
+                const speechIndicator = document.createElement('div');
+                speechIndicator.className = 'speech-indicator';
+                speechIndicator.innerHTML = '<button type="button" class="btn btn-sm btn-link text-muted speech-toggle">' +
+                    '<i class="fas fa-volume-up"></i>' +
+                    '</button>';
+                feedbackMessage.querySelector('.message-content').appendChild(speechIndicator);
+                
+                // Add event listener for the speech toggle button
+                const speechToggleBtn = speechIndicator.querySelector('.speech-toggle');
+                const questionText = feedbackMessage.querySelector('.message-content p').textContent;
+                
+                speechToggleBtn.addEventListener('click', () => {
+                    if (speechManager.isSpeaking) {
+                        speechManager.stop();
+                        speechToggleBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
+                    } else {
+                        speechManager.speak(questionText);
+                        speechToggleBtn.innerHTML = '<i class="fas fa-volume-mute"></i>';
+                    }
+                });
+            }
         }
     });
 </script>
