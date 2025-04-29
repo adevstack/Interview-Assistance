@@ -13,21 +13,19 @@ GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 # Initialize Gemini if API key is available
 if GEMINI_API_KEY:
     genai.configure(api_key=GEMINI_API_KEY)
-    # Set default model - always use the latest flash model first as it's faster and cheaper
+    # Always use gemini-1.5-flash as it's free
     default_model = "gemini-1.5-flash"
     try:
-        # Try to get available models
+        # Just log the available models but always use flash
         available_models = [model.name for model in genai.list_models() 
                           if "generateContent" in model.supported_generation_methods]
-        # Prefer flash first, then pro if available
-        if "gemini-1.5-flash" in available_models:
-            default_model = "gemini-1.5-flash"
-        elif "gemini-1.5-pro" in available_models:
-            default_model = "gemini-1.5-pro"
-        elif available_models:
-            default_model = available_models[0]
+        print(f"Available Gemini models: {available_models}")
+        
+        # Force usage of gemini-1.5-flash regardless of what's available
+        default_model = "gemini-1.5-flash"
     except Exception as e:
         print(f"Error listing Gemini models: {e}")
+        # Keep using gemini-1.5-flash even if we couldn't list models
 else:
     default_model = None
 
