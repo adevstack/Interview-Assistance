@@ -2,6 +2,7 @@ import random
 from datetime import datetime
 from app import db
 from app.models.question import Question
+from app.utils.web_scraper import scrape_interview_questions
 
 # Define interview stages for different roles
 INTERVIEW_STAGES = {
@@ -14,7 +15,7 @@ INTERVIEW_STAGES = {
     'customer_support': ['warmup', 'behavioral', 'situational'],
     'manager': ['warmup', 'behavioral', 'situational'],
     # Default for any other role
-    'default': ['warmup', 'behavioral', 'situational']
+    'default': ['warmup', 'technical', 'behavioral', 'situational']
 }
 
 # Sample questions for each category and role
@@ -105,6 +106,18 @@ def generate_interview_title(role):
 
 def get_questions_for_category(category, role, num_questions=5):
     """Get a set of questions for a specific category and role."""
+    # Check if this is a custom role (not in predefined list)
+    if role not in INTERVIEW_STAGES:
+        try:
+            # Try to scrape questions for this custom role
+            scraped_questions = scrape_interview_questions(role, category, num_questions)
+            if scraped_questions and len(scraped_questions) >= 3:  # Ensure we have at least 3 questions
+                return scraped_questions
+        except Exception as e:
+            print(f"Error scraping questions for {role}: {e}")
+            # Fall back to default questions
+            pass
+    
     # Get role-specific questions if they exist
     role_questions = QUESTIONS.get(category, {}).get(role, [])
     

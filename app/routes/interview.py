@@ -45,43 +45,48 @@ def dashboard():
 @login_required
 def new_interview():
     if request.method == 'POST':
-        role = request.form['role']
-        error = None
-
-        if not role:
-            error = 'Role selection is required.'
-
-        if error is None:
-            # Generate a title for the interview
-            title = generate_interview_title(role)
-            
-            # Create new interview
-            interview = Interview(
-                user_id=current_user.id,
-                title=title,
-                role=role,
-                status='in_progress'
+        role_type = request.form.get('role_type', 'predefined')
+        
+        if role_type == 'predefined':
+            role = request.form.get('role')
+            if not role:
+                flash('Role selection is required.', 'danger')
+                return redirect(url_for('interview.new_interview'))
+        else:  # custom role
+            custom_role = request.form.get('custom_role')
+            if not custom_role:
+                flash('Custom role is required.', 'danger')
+                return redirect(url_for('interview.new_interview'))
+            # Use the custom role instead
+            role = custom_role.strip()
+        
+        # Generate a title for the interview
+        title = generate_interview_title(role)
+        
+        # Create new interview
+        interview = Interview(
+            user_id=current_user.id,
+            title=title,
+            role=role,
+            status='in_progress'
+        )
+        db.session.add(interview)
+        db.session.flush()  # To get the interview ID
+        
+        # Create sessions based on the role
+        stages = get_interview_stages(role)
+        for i, stage in enumerate(stages):
+            session = InterviewSession(
+                interview_id=interview.id,
+                category=stage,
+                stage_order=i,
+                status='pending'
             )
-            db.session.add(interview)
-            db.session.flush()  # To get the interview ID
-            
-            # Create sessions based on the role
-            stages = get_interview_stages(role)
-            for i, stage in enumerate(stages):
-                session = InterviewSession(
-                    interview_id=interview.id,
-                    category=stage,
-                    stage_order=i,
-                    status='pending'
-                )
-                db.session.add(session)
-            
-            db.session.commit()
-            flash('Interview created successfully!', 'success')
-            return redirect(url_for('interview.start', interview_id=interview.id))
-
-        flash(error, 'danger')
-        return redirect(url_for('interview.dashboard'))
+            db.session.add(session)
+        
+        db.session.commit()
+        flash('Interview created successfully!', 'success')
+        return redirect(url_for('interview.start', interview_id=interview.id))
 
     # Available roles for interview
     roles = [

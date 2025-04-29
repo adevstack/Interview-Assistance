@@ -29,11 +29,23 @@
             </div>
             <div class="card-body">
                 <form method="post" action="{{ url_for('interview.new_interview') }}">
-                    <div class="mb-4">
+                    <div class="mb-3">
+                        <label for="role_type" class="form-label">Role Selection</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role_type" id="predefinedRole" value="predefined" checked>
+                            <label class="form-check-label" for="predefinedRole">Choose from predefined roles</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="role_type" id="customRole" value="custom">
+                            <label class="form-check-label" for="customRole">Enter a custom role</label>
+                        </div>
+                    </div>
+
+                    <div id="predefinedRoleDiv" class="mb-4">
                         <label for="role" class="form-label">Select Role</label>
                         <div class="input-group">
                             <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
-                            <select class="form-select" id="role" name="role" required>
+                            <select class="form-select" id="role" name="role">
                                 <option value="" selected disabled>Choose a role for this interview</option>
                                 {% for role in roles %}
                                 <option value="{{ role.id }}" {% if current_user.role == role.id %}selected{% endif %}>{{ role.name }}</option>
@@ -42,6 +54,49 @@
                         </div>
                         <div class="form-text">Questions will be tailored to this specific role.</div>
                     </div>
+                    
+                    <div id="customRoleDiv" class="mb-4 d-none">
+                        <label for="custom_role" class="form-label">Enter Your Job Role</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                            <input type="text" class="form-control" id="custom_role" name="custom_role" placeholder="e.g., UX Designer, DevOps Engineer, Cybersecurity Analyst">
+                        </div>
+                        <div class="form-text">We'll find relevant interview questions for your specific role.</div>
+                    </div>
+                    
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            // Get the radio buttons and divs
+                            const predefinedRadio = document.getElementById('predefinedRole');
+                            const customRadio = document.getElementById('customRole');
+                            const predefinedDiv = document.getElementById('predefinedRoleDiv');
+                            const customDiv = document.getElementById('customRoleDiv');
+                            const roleSelect = document.getElementById('role');
+                            const customRoleInput = document.getElementById('custom_role');
+                            
+                            // Function to toggle the appropriate divs
+                            function toggleRoleInputs() {
+                                if (predefinedRadio.checked) {
+                                    predefinedDiv.classList.remove('d-none');
+                                    customDiv.classList.add('d-none');
+                                    roleSelect.setAttribute('required', '');
+                                    customRoleInput.removeAttribute('required');
+                                } else {
+                                    predefinedDiv.classList.add('d-none');
+                                    customDiv.classList.remove('d-none');
+                                    roleSelect.removeAttribute('required');
+                                    customRoleInput.setAttribute('required', '');
+                                }
+                            }
+                            
+                            // Add event listeners
+                            predefinedRadio.addEventListener('change', toggleRoleInputs);
+                            customRadio.addEventListener('change', toggleRoleInputs);
+                            
+                            // Initialize
+                            toggleRoleInputs();
+                        });
+                    </script>
                     
                     <div class="d-grid gap-2">
                         <button type="submit" class="btn btn-primary btn-lg">
