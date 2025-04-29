@@ -22,7 +22,6 @@ def evaluate_answer(answer_id):
     """Evaluate an answer using NLP techniques."""
     from app.models.answer import Answer
     from app.models.question import Question
-    from app.utils.openai_integration import generate_question_feedback as openai_generate_feedback, is_openai_available
     from app.utils.gemini_integration import generate_question_feedback as gemini_generate_feedback, is_gemini_available
     
     answer = Answer.query.get(answer_id)
@@ -39,42 +38,11 @@ def evaluate_answer(answer_id):
         set_minimal_feedback(answer, "Your answer is empty. Please provide a response.")
         return False
     
-    # Try using AI for comprehensive evaluation, preferring OpenAI if available, then Gemini
+    # Try using AI for comprehensive evaluation with Gemini
     ai_failed = True
     
-    # Try OpenAI first
-    if is_openai_available():
-        try:
-            # Get AI-generated feedback from OpenAI
-            ai_feedback = openai_generate_feedback(
-                text,
-                question.text,
-                question.category
-            )
-            
-            # Check if feedback contains error message from the fallback
-            if "An error occurred while generating AI feedback" in ai_feedback.get('feedback', ''):
-                # This means OpenAI failed, raise exception to try Gemini
-                raise Exception("OpenAI fallback was triggered")
-            
-            # Use AI-generated scores and feedback
-            completeness_score = ai_feedback.get('completeness', 70)
-            relevance_score = ai_feedback.get('relevance', 70)
-            structure_score = ai_feedback.get('structure', 70)
-            grammar_score = ai_feedback.get('grammar_score', 80)
-            feedback = ai_feedback.get('feedback', "Thank you for your answer.")
-            suggestions = ai_feedback.get('improvement_suggestions', "")
-            
-            # Mark AI as successful
-            ai_failed = False
-            print("Successfully used OpenAI for feedback")
-            
-        except Exception as e:
-            print(f"Error using OpenAI for feedback: {e}")
-            # Will fall back to Gemini or basic NLP evaluation
-    
-    # If OpenAI failed or isn't available, try Gemini
-    if ai_failed and is_gemini_available():
+    # Use Gemini for AI-powered feedback
+    if is_gemini_available():
         try:
             # Get AI-generated feedback from Gemini
             ai_feedback = gemini_generate_feedback(
