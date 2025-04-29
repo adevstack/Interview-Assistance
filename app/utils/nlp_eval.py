@@ -52,6 +52,11 @@ def evaluate_answer(answer_id):
                 question.category
             )
             
+            # Check if feedback contains error message from the fallback
+            if "An error occurred while generating AI feedback" in ai_feedback.get('feedback', ''):
+                # This means OpenAI failed, raise exception to try Gemini
+                raise Exception("OpenAI fallback was triggered")
+            
             # Use AI-generated scores and feedback
             completeness_score = ai_feedback.get('completeness', 70)
             relevance_score = ai_feedback.get('relevance', 70)
