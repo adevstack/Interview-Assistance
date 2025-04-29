@@ -1,0 +1,197 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h1 class="mb-3"><i class="fas fa-tachometer-alt me-2"></i>Your Dashboard</h1>
+        <p class="lead">Welcome back, {{ current_user.username }}! Track your interview preparation progress and start new practice sessions.</p>
+    </div>
+    <div class="col-md-4 text-md-end align-self-center">
+        <a href="{{ url_for('interview.new_interview') }}" class="btn btn-primary btn-lg">
+            <i class="fas fa-plus-circle me-2"></i>New Interview
+        </a>
+    </div>
+</div>
+
+<!-- Stats Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-chart-line me-2"></i>Total Interviews</h5>
+                <p class="display-4 mb-0">{{ stats.total }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-check-circle me-2"></i>Completed</h5>
+                <p class="display-4 mb-0">{{ stats.completed }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-spinner me-2"></i>In Progress</h5>
+                <p class="display-4 mb-0">{{ stats.in_progress }}</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card stats-card">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-star me-2"></i>Avg. Score</h5>
+                <p class="display-4 mb-0">{{ stats.avg_score }}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interview History -->
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-history me-2"></i>Interview History</h4>
+    </div>
+    <div class="card-body p-0">
+        {% if interviews %}
+        <div class="table-responsive">
+            <table class="table table-hover mb-0">
+                <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Role</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                        <th>Score</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for interview in interviews %}
+                    <tr>
+                        <td>{{ interview.title }}</td>
+                        <td><span class="badge bg-secondary">{{ interview.role|replace('_', ' ')|title }}</span></td>
+                        <td>{{ interview.created_at.strftime('%Y-%m-%d') }}</td>
+                        <td>
+                            {% if interview.status == 'completed' %}
+                            <span class="badge bg-success">Completed</span>
+                            {% elif interview.status == 'in_progress' %}
+                            <span class="badge bg-primary">In Progress</span>
+                            {% elif interview.status == 'abandoned' %}
+                            <span class="badge bg-warning">Abandoned</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if interview.overall_score %}
+                            <span class="badge bg-{% if interview.overall_score >= 80 %}success{% elif interview.overall_score >= 60 %}warning{% else %}danger{% endif %}">
+                                {{ interview.overall_score|round(1) }}
+                            </span>
+                            {% else %}
+                            <span class="badge bg-secondary">N/A</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if interview.status == 'in_progress' %}
+                            <a href="{{ url_for('interview.start', interview_id=interview.id) }}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-play"></i> Continue
+                            </a>
+                            {% elif interview.status == 'completed' %}
+                            <a href="{{ url_for('feedback.results', interview_id=interview.id) }}" class="btn btn-sm btn-info">
+                                <i class="fas fa-chart-bar"></i> Results
+                            </a>
+                            {% endif %}
+                            
+                            <button type="button" class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal{{ interview.id }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                            
+                            <!-- Delete Modal -->
+                            <div class="modal fade" id="deleteModal{{ interview.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ interview.id }}" aria-hidden="true">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title" id="deleteModalLabel{{ interview.id }}">Confirm Deletion</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            Are you sure you want to delete this interview? This action cannot be undone.
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                            <form action="{{ url_for('interview.delete_interview', interview_id=interview.id) }}" method="post">
+                                                <button type="submit" class="btn btn-danger">Delete</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="fas fa-folder-open fa-4x mb-3 text-muted"></i>
+            <h4>No interviews yet</h4>
+            <p class="text-muted">Start your first practice interview to begin improving your skills!</p>
+            <a href="{{ url_for('interview.new_interview') }}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Start New Interview
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Role-specific tips -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Interview Tips for {{ current_user.role|replace('_', ' ')|title }}s</h4>
+    </div>
+    <div class="card-body">
+        {% if current_user.role == 'software_engineer' %}
+        <ul>
+            <li>Practice data structures and algorithms regularly</li>
+            <li>Be ready to explain your past projects in detail</li>
+            <li>Prepare to discuss system design concepts</li>
+            <li>Show problem-solving skills through clear communication</li>
+            <li>Be prepared to write code on a whiteboard or shared editor</li>
+        </ul>
+        {% elif current_user.role == 'data_scientist' %}
+        <ul>
+            <li>Be ready to explain your methodology for data analysis</li>
+            <li>Prepare case studies from your past work</li>
+            <li>Know how to communicate technical insights to non-technical stakeholders</li>
+            <li>Be prepared for questions about statistical methods and machine learning algorithms</li>
+            <li>Practice explaining how you validate your models</li>
+        </ul>
+        {% elif current_user.role == 'hr' %}
+        <ul>
+            <li>Be ready to discuss conflict resolution strategies</li>
+            <li>Prepare examples of how you've improved company culture</li>
+            <li>Know relevant employment laws and best practices</li>
+            <li>Be prepared to discuss recruitment strategies and metrics</li>
+            <li>Practice explaining how you handle sensitive employee situations</li>
+        </ul>
+        {% else %}
+        <ul>
+            <li>Use the STAR method (Situation, Task, Action, Result) for behavioral questions</li>
+            <li>Research the company thoroughly before your interview</li>
+            <li>Prepare thoughtful questions to ask your interviewer</li>
+            <li>Practice common interview questions relevant to your role</li>
+            <li>Be ready to discuss your specific achievements with metrics</li>
+        </ul>
+        {% endif %}
+        
+        <div class="alert alert-primary mt-3">
+            <i class="fas fa-info-circle me-2"></i>
+            <strong>Pro Tip:</strong> Practice makes perfect! Regular interview preparation leads to better performance.
+        </div>
+    </div>
+</div>
+{% endblock %}

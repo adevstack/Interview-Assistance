@@ -1,0 +1,261 @@
+{% extends 'base.html' %}
+
+{% block title %}Answer Feedback - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('interview.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="#">{{ interview.title }}</a></li>
+                <li class="breadcrumb-item"><a href="#">{{ session.category|title }}</a></li>
+                <li class="breadcrumb-item active">Feedback</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3"><i class="fas fa-comment-dots me-2"></i>Answer Feedback</h2>
+        <p class="lead">Review the AI analysis of your answer and use the feedback to improve.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        {% if has_next %}
+        <a href="{{ url_for('interview.session', interview_id=interview.id, session_id=session.id) }}" class="btn btn-primary">
+            <i class="fas fa-arrow-right me-2"></i>Next Question
+        </a>
+        {% else %}
+        <a href="{{ url_for('feedback.results', interview_id=interview.id) }}" class="btn btn-success">
+            <i class="fas fa-check-circle me-2"></i>View Results
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <!-- Question Card -->
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Question</h5>
+                <span class="badge bg-primary">{{ question.category|title }}</span>
+            </div>
+            <div class="card-body">
+                <p>{{ question.text }}</p>
+            </div>
+        </div>
+        
+        <!-- Answer Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">Your Answer</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-0">{{ answer.text }}</p>
+            </div>
+        </div>
+        
+        <!-- Detailed Feedback -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-comment-alt me-2"></i>Feedback</h5>
+            </div>
+            <div class="card-body">
+                {% if answer.feedback %}
+                <p>{{ answer.feedback }}</p>
+                {% else %}
+                <p class="text-muted">Feedback is being generated...</p>
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <!-- Score Card -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Performance Score</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 text-center">
+                        <div class="score-circle 
+                            {% if answer.score >= 80 %}score-excellent
+                            {% elif answer.score >= 60 %}score-good
+                            {% elif answer.score %}score-needs-work
+                            {% endif %}">
+                            <span class="score-text">{{ answer.score|round(1) if answer.score else '?' }}</span>
+                        </div>
+                        <p class="mt-2 mb-0"><strong>Overall Score</strong></p>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="progress-metrics">
+                            <div class="metric-item">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Completeness</span>
+                                    <span>{{ answer.completeness|round(1) if answer.completeness else 'N/A' }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar 
+                                        {% if answer.completeness and answer.completeness >= 80 %}bg-success
+                                        {% elif answer.completeness and answer.completeness >= 60 %}bg-warning
+                                        {% else %}bg-danger{% endif %}"
+                                        role="progressbar" 
+                                        style="width: {{ answer.completeness if answer.completeness else 0 }}%;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-item mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Relevance</span>
+                                    <span>{{ answer.relevance|round(1) if answer.relevance else 'N/A' }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar 
+                                        {% if answer.relevance and answer.relevance >= 80 %}bg-success
+                                        {% elif answer.relevance and answer.relevance >= 60 %}bg-warning
+                                        {% else %}bg-danger{% endif %}"
+                                        role="progressbar" 
+                                        style="width: {{ answer.relevance if answer.relevance else 0 }}%;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-item mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Structure</span>
+                                    <span>{{ answer.structure|round(1) if answer.structure else 'N/A' }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar 
+                                        {% if answer.structure and answer.structure >= 80 %}bg-success
+                                        {% elif answer.structure and answer.structure >= 60 %}bg-warning
+                                        {% else %}bg-danger{% endif %}"
+                                        role="progressbar" 
+                                        style="width: {{ answer.structure if answer.structure else 0 }}%;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-item mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Grammar</span>
+                                    <span>{{ answer.grammar_score|round(1) if answer.grammar_score else 'N/A' }}</span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar 
+                                        {% if answer.grammar_score and answer.grammar_score >= 80 %}bg-success
+                                        {% elif answer.grammar_score and answer.grammar_score >= 60 %}bg-warning
+                                        {% else %}bg-danger{% endif %}"
+                                        role="progressbar" 
+                                        style="width: {{ answer.grammar_score if answer.grammar_score else 0 }}%;">
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="metric-item mt-3">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Sentiment</span>
+                                    <span>
+                                        {% if answer.sentiment_score is not none %}
+                                            {% if answer.sentiment_score > 0.2 %}
+                                                Positive
+                                            {% elif answer.sentiment_score < -0.2 %}
+                                                Negative
+                                            {% else %}
+                                                Neutral
+                                            {% endif %}
+                                        {% else %}
+                                            N/A
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <div class="progress" style="height: 8px;">
+                                    <div class="progress-bar 
+                                        {% if answer.sentiment_score and answer.sentiment_score > 0.2 %}bg-success
+                                        {% elif answer.sentiment_score and answer.sentiment_score < -0.2 %}bg-danger
+                                        {% else %}bg-warning{% endif %}"
+                                        role="progressbar" 
+                                        style="width: {{ ((answer.sentiment_score + 1) / 2 * 100) if answer.sentiment_score is not none else 50 }}%;">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Improvement Suggestions -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Improvement Suggestions</h5>
+            </div>
+            <div class="card-body">
+                {% if answer.improvement_suggestions %}
+                <p>{{ answer.improvement_suggestions|nl2br }}</p>
+                {% else %}
+                <p class="text-muted">Suggestions are being generated...</p>
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Grammar Issues -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-spell-check me-2"></i>Grammar & Language</h5>
+            </div>
+            <div class="card-body">
+                {% if answer.grammar_issues and answer.grammar_issues != "No grammar issues found." %}
+                <p>Review these grammar issues:</p>
+                <div class="grammar-issues">
+                    {{ answer.grammar_issues|nl2br }}
+                </div>
+                {% elif answer.grammar_issues == "No grammar issues found." %}
+                <div class="alert alert-success mb-0">
+                    <i class="fas fa-check-circle me-2"></i>No significant grammar issues detected!
+                </div>
+                {% else %}
+                <p class="text-muted">Grammar analysis is being performed...</p>
+                <div class="d-flex justify-content-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reload answer data periodically if processing -->
+{% if not answer.feedback or not answer.improvement_suggestions %}
+<script>
+    // Refresh data every 3 seconds if answer is still being processed
+    const checkInterval = setInterval(function() {
+        fetch('{{ url_for("feedback.api_answer", answer_id=answer.id) }}')
+            .then(response => response.json())
+            .then(data => {
+                if (data.feedback && data.score) {
+                    window.location.reload();
+                    clearInterval(checkInterval);
+                }
+            })
+            .catch(error => console.error('Error fetching answer data:', error));
+    }, 3000);
+</script>
+{% endif %}
+{% endblock %}

@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}Interview Session - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('interview.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item">{{ interview.title }}</li>
+                {% for prev_session in previous_sessions %}
+                <li class="breadcrumb-item"><a href="#">{{ prev_session.category|title }}</a></li>
+                {% endfor %}
+                <li class="breadcrumb-item active">{{ session.category|title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3">
+            {% if session.category == 'warmup' %}
+            <i class="fas fa-coffee me-2"></i>
+            {% elif session.category == 'technical' %}
+            <i class="fas fa-code me-2"></i>
+            {% elif session.category == 'behavioral' %}
+            <i class="fas fa-users me-2"></i>
+            {% elif session.category == 'situational' %}
+            <i class="fas fa-comments me-2"></i>
+            {% else %}
+            <i class="fas fa-question-circle me-2"></i>
+            {% endif %}
+            {{ session.category|title }} Questions
+        </h2>
+        <p class="lead">
+            {% if session.category == 'warmup' %}
+            These introductory questions help you get comfortable with the interview process.
+            {% elif session.category == 'technical' %}
+            These questions test your technical knowledge and problem-solving abilities.
+            {% elif session.category == 'behavioral' %}
+            These questions assess how you've handled situations in the past. Use the STAR method (Situation, Task, Action, Result).
+            {% elif session.category == 'situational' %}
+            These questions evaluate how you would handle hypothetical scenarios.
+            {% else %}
+            Answer the following questions to the best of your ability.
+            {% endif %}
+        </p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <div class="interview-controls">
+            <button id="toggleVoice" class="btn btn-outline-primary me-2">
+                <i class="fas fa-microphone"></i> Voice Input
+            </button>
+            <button type="button" class="btn btn-outline-danger" data-bs-toggle="modal" data-bs-target="#cancelModal">
+                <i class="fas fa-times"></i> Cancel
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Progress bar -->
+<div class="progress mb-4" style="height: 10px;">
+    <div class="progress-bar" role="progressbar" style="width: {{ progress }}%;" 
+         aria-valuenow="{{ progress }}" aria-valuemin="0" aria-valuemax="100">
+    </div>
+</div>
+<p class="text-end text-muted small mb-4">Question {{ answered_questions + 1 }} of {{ total_questions }}</p>
+
+<!-- Question Card -->
+<div class="card mb-4">
+    <div class="card-header d-flex justify-content-between align-items-center">
+        <h5 class="mb-0">Question</h5>
+        <span class="badge bg-primary">{{ question.category|title }}</span>
+    </div>
+    <div class="card-body">
+        <p class="question-text">{{ question.text }}</p>
+    </div>
+</div>
+
+<!-- Answer Form -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">Your Answer</h5>
+    </div>
+    <div class="card-body">
+        <form id="answerForm" method="post">
+            <div class="mb-3">
+                <textarea id="answer" name="answer" class="form-control" rows="10" 
+                          placeholder="Enter your answer here..." required></textarea>
+            </div>
+            
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div id="voiceStatus" class="d-none alert alert-info">
+                        <i class="fas fa-microphone"></i> Voice input is active. Speak clearly...
+                    </div>
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-paper-plane me-2"></i>Submit Answer
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Tips for this question type -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for {{ question.category|title }} Questions</h5>
+    </div>
+    <div class="card-body">
+        {% if question.category == 'warmup' %}
+        <ul>
+            <li>Be concise but thorough</li>
+            <li>Highlight relevant aspects of your background</li>
+            <li>Show enthusiasm for the role</li>
+            <li>Connect your answer to the position you're applying for</li>
+        </ul>
+        {% elif question.category == 'technical' %}
+        <ul>
+            <li>Start by explaining your understanding of the concept</li>
+            <li>Use specific examples from your experience</li>
+            <li>Discuss pros and cons when applicable</li>
+            <li>Break down complex problems into smaller steps</li>
+            <li>Think out loud to show your problem-solving process</li>
+        </ul>
+        {% elif question.category == 'behavioral' %}
+        <ul>
+            <li><strong>S</strong>ituation: Describe the context and background</li>
+            <li><strong>T</strong>ask: Explain your responsibility in that situation</li>
+            <li><strong>A</strong>ction: Detail the specific actions you took</li>
+            <li><strong>R</strong>esult: Share the outcomes and what you learned</li>
+            <li>Use specific metrics when possible to quantify your impact</li>
+        </ul>
+        {% elif question.category == 'situational' %}
+        <ul>
+            <li>Consider multiple approaches to the scenario</li>
+            <li>Explain your decision-making process</li>
+            <li>Demonstrate problem-solving and critical thinking</li>
+            <li>Show how you would communicate with stakeholders</li>
+            <li>Discuss how you would measure success</li>
+        </ul>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Cancel Modal -->
+<div class="modal fade" id="cancelModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Cancel Interview?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Are you sure you want to cancel this interview? Your progress will be saved, but the interview will be marked as abandoned.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Continue Interview</button>
+                <form action="{{ url_for('interview.cancel_interview', interview_id=interview.id) }}" method="post">
+                    <button type="submit" class="btn btn-danger">Cancel Interview</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize voice input
+        const voiceToggle = document.getElementById('toggleVoice');
+        const answerTextarea = document.getElementById('answer');
+        const voiceStatus = document.getElementById('voiceStatus');
+        
+        // Show browser compatibility message if needed
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            voiceToggle.disabled = true;
+            voiceToggle.title = 'Voice input not supported in your browser';
+        } else {
+            initVoiceInput(voiceToggle, answerTextarea, voiceStatus);
+        }
+    });
+</script>
+{% endblock %}

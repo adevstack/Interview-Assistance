@@ -1,0 +1,84 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-user-plus me-2"></i>Register</h4>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    <div class="mb-3">
+                        <label for="username" class="form-label">Username</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-user"></i></span>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   placeholder="Choose a username" required autofocus>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   placeholder="Enter your email" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   placeholder="Create a password" required>
+                        </div>
+                        <div class="form-text">Password must be at least 8 characters long.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="role" class="form-label">Your Primary Role</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="" selected disabled>Select your role</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}">{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-text">This will help us tailor your interview questions.</div>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-user-plus me-2"></i>Register
+                        </button>
+                    </div>
+                </form>
+            </div>
+            <div class="card-footer text-center">
+                <p class="mb-0">Already have an account? <a href="{{ url_for('auth.login') }}">Log In</a></p>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Why Register?</h5>
+            </div>
+            <div class="card-body">
+                <p>Creating an account lets you:</p>
+                <ul>
+                    <li>Save your interview practice history</li>
+                    <li>Track your progress over time</li>
+                    <li>Receive personalized feedback</li>
+                    <li>Practice with questions tailored to your role</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+name = "ai-interview-prep"
+type = "python"
+account_id = ""
+workers_dev = true
+compatibility_date = "2023-01-01"
+compatibility_flags = ["python_workers"]
+
+[vars]
+FLASK_ENV = "production"
+
+# The binding to use for the SQLite database.
+# Adjust this for your actual database setup.
+[[d1_databases]]
+binding = "DB"
+database_name = "ai_interview_prep"
+database_id = ""
+
+# Main entrypoint for the Cloudflare Worker
+[build]
+command = ""
+
+[build.upload]
+format = "service-worker"
+
+# Route traffic based on path or hostname
+[[routes]]
+pattern = "*/*"
+script = "asgi.py"
+
+# Set environment variables
+[env.production]
+FLASK_ENV = "production"
+DEBUG = "False"
+SESSION_COOKIE_SECURE = "True"
+
+[env.production.vars]
+# These variables will be set from Cloudflare secrets
+DATABASE_URL = ""
+
+[triggers]
+crons = []

@@ -1,0 +1,157 @@
+{% extends 'base.html' %}
+
+{% block title %}New Interview - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('interview.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active">New Interview</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3"><i class="fas fa-plus-circle me-2"></i>Start a New Interview</h2>
+        <p class="lead">Configure your interview settings to get personalized questions based on your role.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-cog me-2"></i>Interview Settings</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{{ url_for('interview.new_interview') }}">
+                    <div class="mb-4">
+                        <label for="role" class="form-label">Select Role</label>
+                        <div class="input-group">
+                            <span class="input-group-text"><i class="fas fa-briefcase"></i></span>
+                            <select class="form-select" id="role" name="role" required>
+                                <option value="" selected disabled>Choose a role for this interview</option>
+                                {% for role in roles %}
+                                <option value="{{ role.id }}" {% if current_user.role == role.id %}selected{% endif %}>{{ role.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-text">Questions will be tailored to this specific role.</div>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-play-circle me-2"></i>Start Interview
+                        </button>
+                        <a href="{{ url_for('interview.dashboard') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>What to Expect</h5>
+            </div>
+            <div class="card-body">
+                <p>Your interview will consist of multiple stages:</p>
+                
+                <div class="interview-stage mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="stage-icon me-3">
+                            <i class="fas fa-coffee"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Warmup Questions</h6>
+                            <small class="text-muted">Get comfortable with basic questions</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interview-stage mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="stage-icon me-3">
+                            <i class="fas fa-code"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Technical Questions</h6>
+                            <small class="text-muted">Role-specific technical assessment</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interview-stage mb-3">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="stage-icon me-3">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Behavioral Questions</h6>
+                            <small class="text-muted">Assess your past experiences</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="interview-stage">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="stage-icon me-3">
+                            <i class="fas fa-comments"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Situational Questions</h6>
+                            <small class="text-muted">How you handle specific scenarios</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-info mt-3">
+                    <i class="fas fa-lightbulb me-2"></i>
+                    <strong>Tip:</strong> You'll receive AI feedback after each answer to help you improve.
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0"><i class="fas fa-microphone me-2"></i>Voice Feature</h5>
+            </div>
+            <div class="card-body">
+                <p>During the interview, you can use voice input to record your answers instead of typing.</p>
+                <p class="mb-0"><small class="text-muted">Note: This feature requires microphone permission in your browser.</small></p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stage-icon {
+        background-color: var(--surface-light);
+        color: var(--accent-color);
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+    }
+    
+    .interview-stage {
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    
+    .interview-stage:last-child {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+</style>
+{% endblock %}

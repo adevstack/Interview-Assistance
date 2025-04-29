@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+
+{% block title %}Interview Results - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{{ url_for('interview.dashboard') }}">Dashboard</a></li>
+                <li class="breadcrumb-item active">{{ interview.title }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row mb-4">
+    <div class="col-md-8">
+        <h2 class="mb-3"><i class="fas fa-chart-bar me-2"></i>Interview Results</h2>
+        <p class="lead">Review your performance, strengths, and areas for improvement.</p>
+    </div>
+    <div class="col-md-4 text-md-end">
+        <a href="{{ url_for('interview.new_interview') }}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-2"></i>Start New Interview
+        </a>
+    </div>
+</div>
+
+<!-- Overall Score Card -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-star me-2"></i>Overall Performance</h4>
+            </div>
+            <div class="card-body">
+                <div class="row align-items-center">
+                    <div class="col-md-4 text-center">
+                        <div class="score-circle 
+                            {% if interview.overall_score >= 80 %}score-excellent
+                            {% elif interview.overall_score >= 60 %}score-good
+                            {% elif interview.overall_score %}score-needs-work
+                            {% endif %}"
+                            style="width: 160px; height: 160px;">
+                            <span class="score-text" style="font-size: 3.5rem;">
+                                {{ interview.overall_score|round(1) if interview.overall_score else 'N/A' }}
+                            </span>
+                        </div>
+                        <h5 class="mt-3">Overall Score</h5>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="stats-summary">
+                            <div class="row">
+                                <div class="col-6 mb-3">
+                                    <h6 class="text-muted">Role</h6>
+                                    <p class="fs-5">{{ interview.role|replace('_', ' ')|title }}</p>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <h6 class="text-muted">Date</h6>
+                                    <p class="fs-5">{{ interview.completed_at.strftime('%b %d, %Y') if interview.completed_at else interview.created_at.strftime('%b %d, %Y') }}</p>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <h6 class="text-muted">Questions</h6>
+                                    <p class="fs-5">{{ stats.total_questions }}</p>
+                                </div>
+                                <div class="col-6 mb-3">
+                                    <h6 class="text-muted">Completion</h6>
+                                    <p class="fs-5">{{ stats.completion_rate|round(1) }}%</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Strengths and Weaknesses -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-thumbs-up me-2"></i>Your Strengths</h4>
+            </div>
+            <div class="card-body">
+                {% if strengths %}
+                    {% for category, score in strengths %}
+                    <div class="strength-item">
+                        <div class="d-flex justify-content-between">
+                            <h5>{{ category|title }}</h5>
+                            <span class="badge bg-success">{{ score|round(1) }}</span>
+                        </div>
+                        <p class="mb-0">
+                            {% if category == 'warmup' %}
+                            You demonstrate strong foundational communication skills.
+                            {% elif category == 'technical' %}
+                            Your technical knowledge is well-articulated and comprehensive.
+                            {% elif category == 'behavioral' %}
+                            You effectively communicate past experiences with clear outcomes.
+                            {% elif category == 'situational' %}
+                            You handle hypothetical scenarios with sound judgment.
+                            {% else %}
+                            You performed well in this area.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-muted">Not enough data to determine strengths yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0"><i class="fas fa-wrench me-2"></i>Areas to Improve</h4>
+            </div>
+            <div class="card-body">
+                {% if weaknesses %}
+                    {% for category, score in weaknesses %}
+                    <div class="weakness-item">
+                        <div class="d-flex justify-content-between">
+                            <h5>{{ category|title }}</h5>
+                            <span class="badge bg-danger">{{ score|round(1) }}</span>
+                        </div>
+                        <p class="mb-0">
+                            {% if category == 'warmup' %}
+                            Focus on more concise and confident introductory responses.
+                            {% elif category == 'technical' %}
+                            Strengthen your technical explanations with more specific examples.
+                            {% elif category == 'behavioral' %}
+                            Structure your experiences better using the STAR method.
+                            {% elif category == 'situational' %}
+                            Consider multiple perspectives when addressing hypothetical scenarios.
+                            {% else %}
+                            This area needs additional focus in future interviews.
+                            {% endif %}
+                        </p>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                <p class="text-muted">Not enough data to determine areas for improvement yet.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Session Breakdown -->
+<div class="card mb-4">
+    <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-list-alt me-2"></i>Session Breakdown</h4>
+    </div>
+    <div class="card-body p-0">
+        <div class="accordion" id="sessionAccordion">
+            {% for data in session_data %}
+            <div class="accordion-item">
+                <h2 class="accordion-header" id="heading{{ data.session.id }}">
+                    <button class="accordion-button {% if not loop.first %}collapsed{% endif %}" type="button" 
+                            data-bs-toggle="collapse" data-bs-target="#collapse{{ data.session.id }}" 
+                            aria-expanded="{{ 'true' if loop.first else 'false' }}" 
+                            aria-controls="collapse{{ data.session.id }}">
+                        <div class="d-flex justify-content-between align-items-center w-100 me-3">
+                            <div>
+                                {% if data.session.category == 'warmup' %}
+                                <i class="fas fa-coffee me-2"></i>
+                                {% elif data.session.category == 'technical' %}
+                                <i class="fas fa-code me-2"></i>
+                                {% elif data.session.category == 'behavioral' %}
+                                <i class="fas fa-users me-2"></i>
+                                {% elif data.session.category == 'situational' %}
+                                <i class="fas fa-comments me-2"></i>
+                                {% endif %}
+                                {{ data.session.category|title }} Questions
+                            </div>
+                            <div>
+                                <span class="badge bg-{% if data.avg_score >= 80 %}success{% elif data.avg_score >= 60 %}warning{% else %}danger{% endif %}">
+                                    {{ data.avg_score|round(1) }}
+                                </span>
+                            </div>
+                        </div>
+                    </button>
+                </h2>
+                <div id="collapse{{ data.session.id }}" class="accordion-collapse collapse {% if loop.first %}show{% endif %}" 
+                     aria-labelledby="heading{{ data.session.id }}" data-bs-parent="#sessionAccordion">
+                    <div class="accordion-body p-0">
+                        <div class="list-group list-group-flush">
+                            {% for qa in data.questions %}
+                            <div class="list-group-item">
+                                <div class="mb-3">
+                                    <h5 class="mb-2">Question {{ loop.index }}</h5>
+                                    <p>{{ qa.question.text }}</p>
+                                </div>
+                                
+                                {% if qa.answer %}
+                                <div class="mb-3">
+                                    <h6 class="mb-2">Your Answer</h6>
+                                    <p class="mb-2">{{ qa.answer.text }}</p>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-3">
+                                            <span class="badge bg-{% if qa.answer.score >= 80 %}success{% elif qa.answer.score >= 60 %}warning{% else %}danger{% endif %}">
+                                                Score: {{ qa.answer.score|round(1) if qa.answer.score else 'N/A' }}
+                                            </span>
+                                        </div>
+                                        {% if qa.answer.feedback %}
+                                        <a href="{{ url_for('feedback.answer', answer_id=qa.answer.id) }}" class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-comment-dots me-1"></i>View Feedback
+                                        </a>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% else %}
+                                <div class="alert alert-secondary mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>No answer provided for this question.
+                                </div>
+                                {% endif %}
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Detailed Recommendations -->
+<div class="card">
+    <div class="card-header">
+        <h4 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Recommendations</h4>
+    </div>
+    <div class="card-body">
+        {% if interview.overall_score %}
+            {% if interview.overall_score >= 80 %}
+            <div class="alert alert-success mb-4">
+                <i class="fas fa-medal me-2"></i>
+                <strong>Excellent Performance!</strong> You're well-prepared for real interviews.
+            </div>
+            <p>Based on your strong performance, here are some suggestions to further refine your skills:</p>
+            <ul>
+                <li>Practice with more challenging, industry-specific questions</li>
+                <li>Focus on quantifying your achievements with specific metrics</li>
+                <li>Prepare concise stories that highlight your unique value proposition</li>
+                <li>Research target companies more deeply to tailor your responses to their culture</li>
+            </ul>
+            {% elif interview.overall_score >= 60 %}
+            <div class="alert alert-warning mb-4">
+                <i class="fas fa-thumbs-up me-2"></i>
+                <strong>Good Performance!</strong> With some improvements, you'll be well-prepared.
+            </div>
+            <p>Based on your performance, here are key areas to focus on:</p>
+            <ul>
+                <li>Structure your answers more clearly using frameworks like STAR for behavioral questions</li>
+                <li>Provide more specific examples from your experience</li>
+                <li>Practice speaking more concisely while still being thorough</li>
+                <li>Focus on areas where your scores were lower than 70</li>
+            </ul>
+            {% else %}
+            <div class="alert alert-danger mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Needs Improvement.</strong> More practice will help you prepare better.
+            </div>
+            <p>Based on your performance, focus on these fundamental improvements:</p>
+            <ul>
+                <li>Review the STAR method (Situation, Task, Action, Result) for structuring answers</li>
+                <li>Practice articulating your experiences more clearly</li>
+                <li>Research common questions for your role and prepare answers in advance</li>
+                <li>Consider seeking professional guidance or workshops on interview skills</li>
+            </ul>
+            {% endif %}
+        {% else %}
+        <p class="text-muted">Complete more questions to receive personalized recommendations.</p>
+        {% endif %}
+        
+        <div class="mt-4">
+            <h5>Next Steps</h5>
+            <div class="d-flex mt-3">
+                <a href="{{ url_for('interview.new_interview') }}" class="btn btn-primary me-3">
+                    <i class="fas fa-redo me-2"></i>Practice Again
+                </a>
+                <a href="{{ url_for('interview.dashboard') }}" class="btn btn-outline-secondary">
+                    <i class="fas fa-home me-2"></i>Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.accordion-button {
+    background-color: var(--surface);
+    color: var(--primary-text);
+}
+
+.accordion-button:not(.collapsed) {
+    background-color: var(--surface-dark);
+    color: var(--primary-text);
+}
+
+.accordion-button::after {
+    filter: invert(100%);
+}
+
+.accordion-item {
+    background-color: var(--surface);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+.list-group-item {
+    background-color: var(--surface);
+    border-color: rgba(255, 255, 255, 0.1);
+    color: var(--primary-text);
+}
+</style>
+{% endblock %}
