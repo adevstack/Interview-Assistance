@@ -156,37 +156,45 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             // Clean up the transcript by removing duplicate spaces and fixing common speech recognition issues
             let cleanFinalTranscript = finalTranscript.trim();
             
-            // Fix common speech recognition errors
+            // Create a display element to show both versions if they don't match
+            // This will be used to create a confirmation UI 
+            let originalText = cleanFinalTranscript;
+            
+            // Only apply fixes for fishing/phishing which are well-known terms
             cleanFinalTranscript = cleanFinalTranscript
-                // *** CRITICAL - PRIORITIZE SECURITY TERMS ***
-                // This explicit substitution is for the case when the speech API 
-                // misrecognizes "scammed" as "scared" in fraud contexts
-                .replace(/I was scared/gi, "I was scammed")
-                .replace(/got scared/gi, "got scammed")
-                .replace(/was scared by/gi, "was scammed by")
-                .replace(/being scared/gi, "being scammed")
-                .replace(/scared by a/gi, "scammed by a")
-                .replace(/get scared/gi, "get scammed")
-                .replace(/scared me/gi, "scammed me")
-                // Replace individual word "scant" with "scammed" as this is a common misrecognition
-                .replace(/\bscant\b/gi, "scammed")
-                .replace(/\bscand\b/gi, "scammed")
+                // Fix common security term recognition issues
+                .replace(/\bfish attack\b/gi, "phish attack")
+                .replace(/\bfishing attack\b/gi, "phishing attack")
                 
                 // Fix "a lot" recognition issues
                 .replace(/ lot of /gi, " a lot of ")
                 // Fix "like" recognition issues
                 .replace(/ life /gi, " like ")
-                // Fix common security term recognition issues
-                .replace(/\bfishing\b/gi, "phishing") 
-                .replace(/\bfish\b/gi, "phish")
-                .replace(/fishing attack/gi, "phishing attack")
-                .replace(/fish attack/gi, "phish attack")
                 // Fix "by" recognition issues
                 .replace(/ buy /gi, " by ")
                 // Fix "some" vs "someone" recognition issues
                 .replace(/some scammed/gi, "someone scammed")
                 // Remove multiple spaces
                 .replace(/\s{2,}/g, " ");
+                
+            // Show the original and scammed versions in the status display
+            if (originalText.includes("scared") || originalText.includes("scant") || originalText.includes("scand")) {
+                // Add a message that the user can manually correct if needed
+                statusElement.innerHTML = 'Speech recognized. If you meant "scammed" instead of "scared", click here to correct.';
+                
+                // Make it clickable to replace scared with scammed if desired
+                statusElement.style.cursor = 'pointer';
+                statusElement.onclick = function() {
+                    let scammedVersion = targetTextarea.value
+                        .replace(/scared/gi, "scammed")
+                        .replace(/\bscant\b/gi, "scammed")
+                        .replace(/\bscand\b/gi, "scammed");
+                    targetTextarea.value = scammedVersion;
+                    statusElement.innerHTML = 'Text corrected to use "scammed"';
+                    statusElement.onclick = null;
+                    statusElement.style.cursor = 'default';
+                };
+            }
             
             // Only add space if needed between existing text and new text
             if (targetTextarea.value) {
