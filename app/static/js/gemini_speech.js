@@ -202,12 +202,7 @@ class GeminiSpeechRecognition {
                     const inputEvent = new Event('input', { bubbles: true });
                     targetTextarea.dispatchEvent(inputEvent);
                     
-                    // Auto-submit immediately after receiving transcription
-                    const form = targetTextarea.closest('form');
-                    if (form) {
-                        console.log('Auto-submitting form with Gemini transcript');
-                        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                    }
+                    // We'll let the onResultCallback handle submission to avoid double-submit
                 }
                 
                 // Display the raw transcription temporarily in the status
@@ -246,12 +241,17 @@ class GeminiSpeechRecognition {
                     
                     this.onResultCallback(syntheticResult);
                     
-                    // For better auto-submit, manually trigger the auto-submit code
-                    // from the voice.js file
+                    // Auto-stop recording and then submit
+                    // If we have access to the stop recording function from voice.js
+                    if (window.voiceInputControls && window.voiceInputControls.stopRecording) {
+                        console.log('Auto-stopping Gemini speech recognition');
+                        window.voiceInputControls.stopRecording();
+                    }
+                    
+                    // Submit the form after updating the textarea
                     if (targetTextarea) {
                         const form = targetTextarea.closest('form');
                         if (form) {
-                            // Submit the form after updating the textarea
                             console.log('Auto-submitting form with Gemini transcript (from onResultCallback)');
                             setTimeout(() => {
                                 form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));

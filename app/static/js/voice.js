@@ -406,6 +406,7 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             // Store a reference to the voice input elements to use later
             window.voiceInputControls = {
                 startRecording: startRecording,
+                stopRecording: stopRecording,
                 isRecording: isRecording,
                 toggleButton: toggleButton,
                 statusElement: statusElement
