@@ -111,7 +111,9 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             
             // Use the best transcript
             if (event.results[i].isFinal) {
-                finalTranscript += bestTranscript + ' ';
+                // Remove extra spaces from the transcript
+                const cleanTranscript = bestTranscript.trim();
+                finalTranscript += cleanTranscript + ' ';
             } else {
                 interimTranscript += bestTranscript;
             }
@@ -122,18 +124,46 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             // Reset restart count on successful recognition
             restartCount = 0;
             
-            // If there's already text, add a space before new content
-            if (targetTextarea.value && !targetTextarea.value.endsWith(' ')) {
-                targetTextarea.value += ' ';
+            // Clean up the transcript by removing duplicate spaces and fixing common speech recognition issues
+            let cleanFinalTranscript = finalTranscript.trim();
+            
+            // Fix common speech recognition errors
+            cleanFinalTranscript = cleanFinalTranscript
+                // Fix "a lot" recognition issues
+                .replace(/ lot of /gi, " a lot of ")
+                // Fix "like" recognition issues
+                .replace(/ life /gi, " like ")
+                // Fix common security term recognition issues
+                .replace(/ fishing /gi, " phishing ")
+                .replace(/ fish /gi, " phish ")
+                .replace(/fishing attack/gi, "phishing attack")
+                .replace(/fish attack/gi, "phish attack")
+                // Fix common "I was" pattern
+                .replace(/i was scared like /gi, "i was scammed like ")
+                .replace(/i was scared by /gi, "i was scammed by ")
+                // Fix "by" recognition issues
+                .replace(/ buy /gi, " by ")
+                // Fix "some" vs "someone" recognition issues
+                .replace(/some scammed/gi, "someone scammed")
+                // Remove multiple spaces
+                .replace(/\s{2,}/g, " ");
+            
+            // Only add space if needed between existing text and new text
+            if (targetTextarea.value) {
+                const lastChar = targetTextarea.value.slice(-1);
+                if (lastChar !== ' ' && lastChar !== '\n') {
+                    targetTextarea.value += ' ';
+                }
             }
-            targetTextarea.value += finalTranscript;
+            
+            targetTextarea.value += cleanFinalTranscript;
             
             // Simulate user input to trigger any input events
             const inputEvent = new Event('input', { bubbles: true });
             targetTextarea.dispatchEvent(inputEvent);
             
             // Also log what was added to help with debugging
-            console.log(`Added to textarea: "${finalTranscript}"`);
+            console.log(`Added to textarea: "${cleanFinalTranscript}"`);
         }
         
         // Show interim transcript in status element
