@@ -230,7 +230,10 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
         
         // Show interim transcript in status element
         if (interimTranscript) {
-            statusElement.textContent = 'Listening: ' + interimTranscript;
+            statusElement.innerHTML = '<strong>Listening:</strong> ' + interimTranscript;
+            statusElement.style.color = '#007bff'; // Make the interim text blue for visibility
+        } else if (isRecording) {
+            statusElement.innerHTML = '<strong>Listening...</strong> (speak now)';
         }
     };
     
@@ -290,7 +293,11 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
                     setTimeout(() => {
                         if (isRecording) {
                             recognition.start();
-                            statusElement.textContent = 'Listening...';
+                            statusElement.innerHTML = '<strong>Listening...</strong> (speak now)';
+                            statusElement.style.color = '#007bff';
+                            statusElement.style.padding = '5px';
+                            statusElement.style.borderRadius = '3px';
+                            statusElement.style.backgroundColor = '#f0f8ff';
                         }
                     }, 100);
                 } catch (e) {
@@ -323,7 +330,11 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             toggleButton.classList.remove('btn-outline-primary');
             toggleButton.classList.add('btn-danger');
             statusElement.classList.remove('d-none');
-            statusElement.textContent = 'Listening...';
+            statusElement.innerHTML = '<strong>Listening...</strong> (speak now)';
+            statusElement.style.color = '#007bff';
+            statusElement.style.padding = '5px';
+            statusElement.style.borderRadius = '3px';
+            statusElement.style.backgroundColor = '#f0f8ff';
         } catch (e) {
             console.error('Error starting speech recognition:', e);
             isRecording = false;

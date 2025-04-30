@@ -139,12 +139,23 @@ class GeminiSpeechRecognition {
         const audioBlob = new Blob(this.audioChunks, { type: this.audioFormat });
         console.log(`Audio size: ${audioBlob.size} bytes`);
         
+        // Update status to show we're processing
+        if (this.statusElement) {
+            this.statusElement.textContent = 'Processing speech with Gemini...';
+        }
+        
         // Convert blob to base64 for API submission
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         
         reader.onloadend = () => {
             const base64Audio = reader.result.split(',')[1]; // Remove data URL prefix
+            
+            // Show a spinner or indication that processing is happening
+            if (this.statusElement) {
+                this.statusElement.innerHTML = '<strong>Processing with Gemini...</strong> <span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+                this.statusElement.style.color = '#ff9900';  // Orange color to indicate processing
+            }
             
             // Send to our backend endpoint that will forward to Gemini API
             fetch('/api/speech_recognition', {
@@ -166,8 +177,25 @@ class GeminiSpeechRecognition {
             .then(data => {
                 console.log('Gemini transcription result:', data);
                 
-                if (this.statusElement) {
-                    this.statusElement.textContent = '';
+                // Display the raw transcription temporarily in the status
+                if (this.statusElement && data.transcript) {
+                    this.statusElement.innerHTML = '<strong>Recognized:</strong> <span style="color: green;">' + data.transcript + '</span>';
+                    this.statusElement.style.color = 'black';
+                    this.statusElement.style.padding = '10px';
+                    this.statusElement.style.border = '1px solid #ddd';
+                    this.statusElement.style.borderRadius = '5px';
+                    this.statusElement.style.backgroundColor = '#f8f9fa';
+                    
+                    // Clear the styling after showing for a while
+                    setTimeout(() => {
+                        if (this.statusElement) {
+                            this.statusElement.textContent = '';
+                            this.statusElement.style.padding = '';
+                            this.statusElement.style.border = '';
+                            this.statusElement.style.borderRadius = '';
+                            this.statusElement.style.backgroundColor = '';
+                        }
+                    }, 8000);
                 }
                 
                 if (this.onResultCallback && data.transcript) {
