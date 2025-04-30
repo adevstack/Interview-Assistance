@@ -83,9 +83,6 @@
                 </div>
                 <div class="message-content">
                     <p>{{ question.text }}</p>
-                    {% if session.category == 'behavioral' %}
-                    <p class="small text-muted">Remember to use the STAR method in your answer: Situation, Task, Action, Result.</p>
-                    {% endif %}
                 </div>
             </div>
         </div>
@@ -264,7 +261,7 @@
 {% endblock %}
 
 {% block scripts %}
-<script src="{{ url_for('static', filename='js/speech.js') }}"></script>
+
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         // Initialize voice input
@@ -313,8 +310,8 @@
             // Don't prevent default since we want the form to submit
             
             // Stop any ongoing speech when user submits an answer
-            if (typeof speechManager !== 'undefined') {
-                speechManager.stop();
+            if (typeof speechSynthesisManager !== 'undefined') {
+                speechSynthesisManager.stop();
             }
             
             // Add user message to chat
