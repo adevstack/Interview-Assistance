@@ -59,9 +59,20 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             const numAlternatives = event.results[i].length;
             console.log(`Result ${i} has ${numAlternatives} alternatives`);
             
-            // Try each alternative in order of confidence
+            // Try each alternative in order of priority, then confidence
             let bestTranscript = '';
             let bestConfidence = -1;
+            let foundPreferredWord = false;
+            
+            // Security/fraud-specific words to prioritize regardless of confidence
+            const priorityWords = [
+                {search: "scammed", priority: 1},
+                {search: "scammer", priority: 1},
+                {search: "phishing", priority: 1},
+                {search: "fraud", priority: 1},
+                {search: "cybersecurity", priority: 1},
+                {search: "attack", priority: 1}
+            ];
             
             // Check all alternatives to find the best one
             for (let alt = 0; alt < numAlternatives; alt++) {
@@ -70,8 +81,26 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
                 
                 console.log(`Alternative ${alt}: "${currentTranscript}" (confidence: ${currentConfidence})`);
                 
-                // Select the highest confidence result
-                if (currentConfidence > bestConfidence) {
+                // Check if this alternative contains any priority words we want to favor
+                let hasPriorityWord = false;
+                for (const priority of priorityWords) {
+                    if (currentTranscript.toLowerCase().includes(priority.search)) {
+                        console.log(`Found priority word "${priority.search}" in alternative ${alt}`);
+                        hasPriorityWord = true;
+                        
+                        // If we found a priority word and haven't found one before,
+                        // or if this has higher confidence than our previous priority word choice
+                        if (!foundPreferredWord || currentConfidence > bestConfidence) {
+                            bestConfidence = currentConfidence;
+                            bestTranscript = currentTranscript;
+                            foundPreferredWord = true;
+                        }
+                        break;
+                    }
+                }
+                
+                // If no priority word was found in this alternative, use standard confidence scoring
+                if (!hasPriorityWord && !foundPreferredWord && currentConfidence > bestConfidence) {
                     bestConfidence = currentConfidence;
                     bestTranscript = currentTranscript;
                 }
@@ -129,18 +158,29 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             
             // Fix common speech recognition errors
             cleanFinalTranscript = cleanFinalTranscript
+                // *** CRITICAL - PRIORITIZE SECURITY TERMS ***
+                // This explicit substitution is for the case when the speech API 
+                // misrecognizes "scammed" as "scared" in fraud contexts
+                .replace(/I was scared/gi, "I was scammed")
+                .replace(/got scared/gi, "got scammed")
+                .replace(/was scared by/gi, "was scammed by")
+                .replace(/being scared/gi, "being scammed")
+                .replace(/scared by a/gi, "scammed by a")
+                .replace(/get scared/gi, "get scammed")
+                .replace(/scared me/gi, "scammed me")
+                // Replace individual word "scant" with "scammed" as this is a common misrecognition
+                .replace(/\bscant\b/gi, "scammed")
+                .replace(/\bscand\b/gi, "scammed")
+                
                 // Fix "a lot" recognition issues
                 .replace(/ lot of /gi, " a lot of ")
                 // Fix "like" recognition issues
                 .replace(/ life /gi, " like ")
                 // Fix common security term recognition issues
-                .replace(/ fishing /gi, " phishing ")
-                .replace(/ fish /gi, " phish ")
+                .replace(/\bfishing\b/gi, "phishing") 
+                .replace(/\bfish\b/gi, "phish")
                 .replace(/fishing attack/gi, "phishing attack")
                 .replace(/fish attack/gi, "phish attack")
-                // Fix common "I was" pattern
-                .replace(/i was scared like /gi, "i was scammed like ")
-                .replace(/i was scared by /gi, "i was scammed by ")
                 // Fix "by" recognition issues
                 .replace(/ buy /gi, " by ")
                 // Fix "some" vs "someone" recognition issues
