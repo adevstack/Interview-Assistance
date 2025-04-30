@@ -100,21 +100,37 @@ class GeminiSpeechRecognition {
      * Stop recording audio
      */
     stop() {
+        // If we're already stopped or not recording, don't do anything
         if (!this.isRecording || !this.mediaRecorder) {
+            console.log('Gemini speech not recording, ignoring stop request');
             return;
         }
         
+        console.log('Stopping Gemini speech recognition');
+        
+        // Mark as not recording immediately to prevent duplicate stops
         this.isRecording = false;
         
         try {
-            this.mediaRecorder.stop();
-            console.log('Gemini speech recognition stopped');
+            // Only stop if actually recording
+            if (this.mediaRecorder.state === 'recording') {
+                this.mediaRecorder.stop();
+                console.log('Gemini speech recognition stopped successfully');
+            } else {
+                console.log('Gemini mediaRecorder already stopped');
+            }
             
             if (this.statusElement) {
                 this.statusElement.textContent = 'Processing with Gemini...';
             }
+            
         } catch (error) {
             console.error('Error stopping Gemini speech recognition:', error);
+            
+            // Call onEnd even if there was an error, to ensure flow continues
+            if (this.onEndCallback) {
+                this.onEndCallback();
+            }
             
             if (this.onErrorCallback) {
                 this.onErrorCallback({ error: 'stop-error', details: error });

@@ -377,6 +377,11 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
     
     // Stop recording
     function stopRecording() {
+        if (!isRecording) {
+            console.log('Recording already stopped, ignoring duplicate stop request');
+            return;
+        }
+        
         isRecording = false;
         
         // Clear any quiet time timeout
@@ -396,6 +401,11 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
         toggleButton.classList.remove('btn-danger');
         toggleButton.classList.add('btn-outline-primary');
         statusElement.textContent = '';
+        
+        // Update the global voice input controls
+        if (window.voiceInputControls) {
+            window.voiceInputControls.isRecording = false;
+        }
     }
     
     // Auto-start voice input after model speaks
