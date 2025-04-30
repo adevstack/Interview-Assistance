@@ -10,14 +10,28 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
     let restartCount = 0;
     const MAX_RESTARTS = 5;
     
-    // Initialize SpeechRecognition
-    if ('webkitSpeechRecognition' in window) {
-        recognition = new webkitSpeechRecognition();
-    } else if ('SpeechRecognition' in window) {
-        recognition = new SpeechRecognition();
-    } else {
-        console.error('Speech recognition not supported');
-        return;
+    // First try to use our advanced hybrid speech recognition with Gemini support
+    try {
+        console.log('Attempting to create hybrid speech recognition with Gemini support');
+        recognition = createHybridSpeechRecognition(statusElement);
+        
+        if (recognition) {
+            console.log('Successfully created hybrid speech recognition with Gemini support');
+        } else {
+            throw new Error('Failed to create hybrid speech recognition');
+        }
+    } catch (e) {
+        console.error('Error creating hybrid speech recognition, falling back to browser only:', e);
+        
+        // Fall back to browser's built-in recognition
+        if ('webkitSpeechRecognition' in window) {
+            recognition = new webkitSpeechRecognition();
+        } else if ('SpeechRecognition' in window) {
+            recognition = new SpeechRecognition();
+        } else {
+            console.error('Speech recognition not supported');
+            return;
+        }
     }
     
     // Configure recognition with maximum permissiveness and no content filtering

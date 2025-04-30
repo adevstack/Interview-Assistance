@@ -341,4 +341,9 @@
         chatContainer.scrollTop = chatContainer.scrollHeight;
     });
 </script>
+
+<!-- JavaScript for speech and voice recognition -->
+<script src="{{ url_for('static', filename='js/speech.js') }}"></script>
+<script src="{{ url_for('static', filename='js/gemini_speech.js') }}"></script>
+<script src="{{ url_for('static', filename='js/voice.js') }}"></script>
 {% endblock %}
