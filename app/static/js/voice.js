@@ -80,6 +80,10 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
             if (form) {
                 // Stop recording first
                 stopRecording();
+                
+                // Flag this as an auto-submission for feedback tracking
+                window.isVoiceAutoSubmit = true;
+                
                 // Then submit the form
                 setTimeout(() => {
                     form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));

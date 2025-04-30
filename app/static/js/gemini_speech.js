@@ -264,6 +264,9 @@ class GeminiSpeechRecognition {
                         window.voiceInputControls.stopRecording();
                     }
                     
+                    // Flag this as an auto-submission for feedback tracking
+                    window.isVoiceAutoSubmit = true;
+                    
                     // Submit the form after updating the textarea
                     if (targetTextarea) {
                         const form = targetTextarea.closest('form');

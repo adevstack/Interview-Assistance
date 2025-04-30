@@ -99,6 +99,14 @@
             <div id="voiceStatus" class="d-none alert alert-info">
                 <i class="fas fa-microphone"></i> Voice input is active. Speak clearly...
             </div>
+            <div id="submissionStatus" class="d-none">
+                <div class="text-center">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Processing...</span>
+                    </div>
+                    <p class="mt-2">Processing your answer...</p>
+                </div>
+            </div>
         </form>
     </div>
 </div>
@@ -306,12 +314,30 @@
         
         // Handle form submission to add user message to chat
         const answerForm = document.getElementById('answerForm');
+        const submissionStatus = document.getElementById('submissionStatus');
+        
         answerForm.addEventListener('submit', function(e) {
+            // Record submission time for the feedback.js tracker to detect auto-submission
+            window.lastFormSubmission = Date.now();
+            window.isAutoSubmit = window.isVoiceAutoSubmit || false;
+            console.log('Form submission, auto-submit:', window.isAutoSubmit);
+            
             // Don't prevent default since we want the form to submit
+            
+            // Show loading status
+            if (submissionStatus) {
+                submissionStatus.classList.remove('d-none');
+            }
             
             // Stop any ongoing speech when user submits an answer
             if (typeof speechSynthesisManager !== 'undefined') {
                 speechSynthesisManager.stop();
+            }
+            
+            // Stop any ongoing voice recording
+            if (window.voiceInputControls && window.voiceInputControls.stopRecording) {
+                console.log('Stopping voice recording on form submit');
+                window.voiceInputControls.stopRecording();
             }
             
             // Add user message to chat
@@ -328,6 +354,19 @@
                     </div>
                 `;
                 chatContainer.appendChild(messageDiv);
+                
+                // Add a loading message for the feedback
+                const loadingDiv = document.createElement('div');
+                loadingDiv.className = 'chat-message interviewer';
+                loadingDiv.innerHTML = `
+                    <div class="message-avatar">
+                        <i class="fas fa-robot"></i>
+                    </div>
+                    <div class="message-content">
+                        <p><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Analyzing your answer...</p>
+                    </div>
+                `;
+                chatContainer.appendChild(loadingDiv);
                 
                 // Scroll to bottom
                 chatContainer.scrollTop = chatContainer.scrollHeight;
