@@ -54,10 +54,11 @@ def create_app(test_config=None):
         db.create_all()
 
     # Register blueprints
-    from app.routes import auth, interview, feedback
+    from app.routes import auth, interview, feedback, api
     app.register_blueprint(auth.bp)
     app.register_blueprint(interview.bp)
     app.register_blueprint(feedback.bp)
+    app.register_blueprint(api.api_bp)
 
     # Register a simple route for the index
     @app.route('/')
