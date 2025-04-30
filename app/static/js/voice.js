@@ -71,8 +71,8 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
         const currentTime = Date.now();
         const timeSinceLastSpeech = currentTime - lastSpeechTime;
         
-        // If quiet for more than 7 seconds and we have some transcript, auto-submit
-        if (timeSinceLastSpeech > 7000 && targetTextarea && targetTextarea.value.trim().length > 0) {
+        // If quiet for more than 5 seconds and we have some transcript, auto-submit
+        if (timeSinceLastSpeech > 5000 && targetTextarea && targetTextarea.value.trim().length > 0) {
             console.log('Auto-submitting after quiet period:', timeSinceLastSpeech);
             
             // Auto-submit the form

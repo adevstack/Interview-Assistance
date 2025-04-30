@@ -177,6 +177,41 @@ class GeminiSpeechRecognition {
             .then(data => {
                 console.log('Gemini transcription result:', data);
                 
+                // Find the textarea element to add the text to
+                const textareas = document.querySelectorAll('textarea');
+                let targetTextarea = null;
+                
+                // Look for a textarea with id "answer" first
+                for (const textarea of textareas) {
+                    if (textarea.id === 'answer') {
+                        targetTextarea = textarea;
+                        break;
+                    }
+                }
+                
+                // If not found, use the first textarea
+                if (!targetTextarea && textareas.length > 0) {
+                    targetTextarea = textareas[0];
+                }
+                
+                // Add the transcript to the textarea if found
+                if (targetTextarea && data.transcript) {
+                    targetTextarea.value = data.transcript;
+                    
+                    // Trigger input event to let any listeners know the value has changed
+                    const inputEvent = new Event('input', { bubbles: true });
+                    targetTextarea.dispatchEvent(inputEvent);
+                    
+                    // Try to auto-submit after a delay
+                    setTimeout(() => {
+                        const form = targetTextarea.closest('form');
+                        if (form) {
+                            console.log('Auto-submitting form with Gemini transcript');
+                            form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                        }
+                    }, 5000);  // 5 seconds delay for auto-submit
+                }
+                
                 // Display the raw transcription temporarily in the status
                 if (this.statusElement && data.transcript) {
                     this.statusElement.innerHTML = '<strong>Recognized:</strong> <span style="color: green;">' + data.transcript + '</span>';
@@ -195,7 +230,7 @@ class GeminiSpeechRecognition {
                             this.statusElement.style.borderRadius = '';
                             this.statusElement.style.backgroundColor = '';
                         }
-                    }, 8000);
+                    }, 5000);
                 }
                 
                 if (this.onResultCallback && data.transcript) {
