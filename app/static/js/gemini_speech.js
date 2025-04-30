@@ -245,6 +245,19 @@ class GeminiSpeechRecognition {
                     syntheticResult.results[0].isFinal = true;
                     
                     this.onResultCallback(syntheticResult);
+                    
+                    // For better auto-submit, manually trigger the auto-submit code
+                    // from the voice.js file
+                    if (targetTextarea) {
+                        const form = targetTextarea.closest('form');
+                        if (form) {
+                            // Submit the form after updating the textarea
+                            console.log('Auto-submitting form with Gemini transcript (from onResultCallback)');
+                            setTimeout(() => {
+                                form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                            }, 100);
+                        }
+                    }
                 }
             })
             .catch(error => {

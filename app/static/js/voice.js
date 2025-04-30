@@ -403,6 +403,14 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
         const originalSpeak = speechSynthesisManager.speak;
         
         speechSynthesisManager.speak = function(text, callback) {
+            // Store a reference to the voice input elements to use later
+            window.voiceInputControls = {
+                startRecording: startRecording,
+                isRecording: isRecording,
+                toggleButton: toggleButton,
+                statusElement: statusElement
+            };
+            
             originalSpeak.call(speechSynthesisManager, text, function() {
                 // After the model finishes speaking, wait a moment and start recording
                 setTimeout(() => {
