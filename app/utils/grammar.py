@@ -1,33 +1,15 @@
 import re
-import language_tool_python
-
-
-# Initialize language tool for grammar checking
-# Use a singleton pattern to avoid initializing multiple instances
-class LanguageToolSingleton:
-    _instance = None
-    
-    @classmethod
-    def get_instance(cls):
-        if cls._instance is None:
-            try:
-                cls._instance = language_tool_python.LanguageTool('en-US')
-            except Exception as e:
-                print(f"Error initializing LanguageTool: {e}")
-                # Fallback to dummy checker if there's an error
-                cls._instance = DummyChecker()
-        return cls._instance
-
-
-class DummyChecker:
-    """Fallback checker when LanguageTool cannot be initialized."""
-    def check(self, text):
-        return []
+from collections import Counter
+import string
 
 
 def check_grammar(text):
     """
-    Check grammar issues in a text and calculate a grammar score.
+    A simple grammar checking function that looks for common writing issues.
+    
+    This is a lightweight alternative to language_tool_python, which can cause
+    connection errors or timeouts. This implementation focuses on basic grammar
+    and writing quality checks without requiring external services.
     
     Args:
         text (str): The text to check
@@ -35,95 +17,145 @@ def check_grammar(text):
     Returns:
         tuple: (grammar_issues_text, grammar_score)
     """
-    if not text:
+    if not text or not text.strip():
         return "No text provided.", 0
     
-    # Limit text length to prevent timeout/memory issues
-    MAX_TEXT_LENGTH = 2000
+    # Limit text length to prevent performance issues
+    MAX_TEXT_LENGTH = 5000
     if len(text) > MAX_TEXT_LENGTH:
         text = text[:MAX_TEXT_LENGTH] + "..."
         print(f"Grammar check: Text truncated to {MAX_TEXT_LENGTH} characters")
     
     try:
-        # Get LanguageTool instance
-        tool = LanguageToolSingleton.get_instance()
-        
-        # Set a short timeout for grammar check
-        if hasattr(tool, '_TIMEOUT'):
-            original_timeout = tool._TIMEOUT
-            tool._TIMEOUT = 2.0  # 2 seconds timeout
-            
-        try:
-            # Check grammar with timeout protection
-            matches = tool.check(text)
-            
-            # Restore original timeout if changed
-            if hasattr(tool, '_TIMEOUT'):
-                tool._TIMEOUT = original_timeout
-                
-        except Exception as check_error:
-            print(f"Grammar checking process failed: {check_error}")
-            return "Grammar check timed out or failed.", 70
-            
-        # Cap number of issues to analyze (for performance)
-        MAX_ISSUES = 5
-        matches = matches[:MAX_ISSUES] if len(matches) > MAX_ISSUES else matches
-        
-        # Extract issues
+        # Basic grammar and writing quality analysis
         issues = []
-        for match in matches:
-            try:
-                context = match.context if hasattr(match, 'context') else "Context not available"
-                offset = match.offsetInContext if hasattr(match, 'offsetInContext') else 0
-                length = match.errorLength if hasattr(match, 'errorLength') else 1
+        
+        # Check for short sentences (less than 3 words)
+        sentences = re.split(r'[.!?]+', text)
+        sentences = [s.strip() for s in sentences if s.strip()]
+        
+        for i, sentence in enumerate(sentences):
+            words = re.findall(r'\b\w+\b', sentence)
+            
+            # Very short sentences (might be incomplete)
+            if 0 < len(words) < 3:
+                issues.append({
+                    'message': "Very short sentence that may be incomplete",
+                    'context': sentence,
+                    'replacements': ["Consider elaborating or combining with another sentence"]
+                })
+            
+            # Check for duplicate words
+            word_positions = {}
+            duplicate_words = set()
+            
+            for j, word in enumerate(words):
+                word_lower = word.lower()
+                if word_lower in word_positions:
+                    # Only count duplicates that are close to each other (within 3 words)
+                    if j - word_positions[word_lower] <= 3:
+                        duplicate_words.add(word_lower)
+                word_positions[word_lower] = j
+            
+            if duplicate_words and len(words) > 3:
+                duplicates = ", ".join(duplicate_words)
+                issues.append({
+                    'message': f"Repeated word(s): {duplicates}",
+                    'context': sentence,
+                    'replacements': ["Consider using synonyms or restructuring"]
+                })
                 
-                # Highlight the error in context (with safety checks)
-                if context and 0 <= offset < len(context) and offset + length <= len(context):
-                    highlighted = (
-                        context[:offset] + 
-                        '**' + context[offset:offset+length] + '**' + 
-                        context[offset+length:]
-                    )
-                else:
-                    highlighted = context
-                
-                # Get message and replacements
-                message = match.message if hasattr(match, 'message') else "Error detected"
-                replacements = match.replacements[:3] if hasattr(match, 'replacements') and match.replacements else []
+            # Check for long sentences (over 40 words)
+            if len(words) > 40:
+                issues.append({
+                    'message': "Very long sentence that may be hard to follow",
+                    'context': sentence[:75] + "..." if len(sentence) > 75 else sentence,
+                    'replacements': ["Consider breaking into multiple sentences for clarity"]
+                })
+        
+        # Check for excessive punctuation
+        punctuation_count = Counter(c for c in text if c in string.punctuation)
+        for punct, count in punctuation_count.items():
+            if punct in "!?." and count > 3:
+                # Find a context with excessive punctuation
+                pattern = r'[^!?.]{0,20}[!?.]{3,}[^!?.]{0,20}'
+                match = re.search(pattern, text)
+                context = match.group(0) if match else f"...{punct}{punct}{punct}..."
                 
                 issues.append({
-                    'message': message,
-                    'context': highlighted,
-                    'replacements': replacements
+                    'message': f"Excessive punctuation: '{punct}'",
+                    'context': context,
+                    'replacements': ["Use punctuation more sparingly"]
                 })
-            except Exception as issue_error:
-                print(f"Error processing grammar issue: {issue_error}")
-                continue
+                
+        # Check for passive voice indicators (simple detection)
+        passive_markers = [
+            r'\b(?:am|is|are|was|were|be|been|being)\s+\w+ed\b',  # "is completed"
+            r'\b(?:has|have|had)\s+been\s+\w+ed\b',              # "has been completed"
+        ]
+        
+        for pattern in passive_markers:
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                # Get some context around the match
+                start = max(0, match.start() - 20)
+                end = min(len(text), match.end() + 20)
+                context = text[start:end]
+                
+                issues.append({
+                    'message': "Possible passive voice",
+                    'context': f"...{context}..." if start > 0 or end < len(text) else context,
+                    'replacements': ["Consider using active voice for stronger impact"]
+                })
+        
+        # Check for common filler words and phrases
+        filler_phrases = [
+            r'\bin my opinion\b', r'\bi think\b', r'\bi believe\b', r'\bi feel\b',
+            r'\bbasically\b', r'\bliterally\b', r'\bactually\b', r'\bvery\b', 
+            r'\breally\b', r'\bquite\b', r'\bin order to\b', r'\bat the end of the day\b',
+            r'\bfor all intents and purposes\b'
+        ]
+        
+        for pattern in filler_phrases:
+            matches = re.finditer(pattern, text, re.IGNORECASE)
+            for match in matches:
+                # Get some context around the match
+                start = max(0, match.start() - 20)
+                end = min(len(text), match.end() + 20)
+                context = text[start:end]
+                phrase = match.group(0)
+                
+                issues.append({
+                    'message': f"Filler phrase: '{phrase}'",
+                    'context': f"...{context}..." if start > 0 or end < len(text) else context,
+                    'replacements': ["Consider removing or replacing with more precise language"]
+                })
+        
+        # Limit the number of issues reported
+        MAX_ISSUES = 5
+        issues = issues[:MAX_ISSUES] if len(issues) > MAX_ISSUES else issues
         
         # Format issues as text
         if issues:
             issues_text = "\n".join([
                 f"{i+1}. {issue['message']}\n   Context: {issue['context']}\n" +
-                (f"   Suggestions: {', '.join(issue['replacements'])}" if issue['replacements'] else "") 
+                (f"   Suggestion: {issue['replacements'][0]}" if issue['replacements'] else "")
                 for i, issue in enumerate(issues)
             ])
         else:
-            issues_text = "No grammar issues found."
+            issues_text = "No significant grammar issues found."
         
-        # Calculate grammar score (0-100)
-        word_count = len(re.findall(r'\b\w+\b', text))
-        if word_count == 0:
-            return "Text is too short for grammar analysis.", 0
-        
-        # Scale score based on error rate (errors per 100 words)
-        error_rate = min(10, len(matches) / max(1, word_count) * 100)  # Cap error rate
-        grammar_score = max(0, min(100, 100 - (error_rate * 10)))  # Each error reduces score
+        # Calculate a grammar score (0-100)
+        # Base score starts at 85 (good), and each issue reduces it
+        base_score = 85
+        issue_penalty = min(50, len(issues) * 5)  # Cap the penalty at 50 points
+        grammar_score = max(0, min(100, base_score - issue_penalty))
         
         return issues_text, grammar_score
     
     except Exception as e:
         print(f"Error in grammar check: {e}")
-        return "Grammar check unavailable.", 70  # Default score when service fails
+        return "Grammar check encountered an error.", 75  # Default score when service fails
 
 
 def get_readability_metrics(text):
