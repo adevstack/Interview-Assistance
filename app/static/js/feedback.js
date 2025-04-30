@@ -3,9 +3,24 @@
  * Ensures feedback is loaded and displayed after form submission
  */
 
+// Keep track of feedback processing attempts
+let processingAttempts = 0;
+let processingInProgress = false;
+const MAX_PROCESSING_ATTEMPTS = 3;
+
 // Process answer ID to ensure feedback is generated and displayed
 function processAnswerFeedback(answerId) {
     console.log('Processing feedback for answer ID:', answerId);
+    
+    // Prevent duplicate processing attempts
+    if (processingInProgress) {
+        console.log('Already processing feedback, skipping duplicate request');
+        return;
+    }
+    
+    // Track that we're processing
+    processingInProgress = true;
+    processingAttempts++;
     
     // Show a loading indicator
     const feedbackElements = document.querySelectorAll('.chat-message.interviewer .message-content');
@@ -13,8 +28,15 @@ function processAnswerFeedback(answerId) {
     
     if (lastFeedbackElement) {
         lastFeedbackElement.innerHTML = `
-            <p><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating feedback...</p>
+            <p><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating feedback... (Attempt ${processingAttempts}/${MAX_PROCESSING_ATTEMPTS})</p>
         `;
+    }
+    
+    // If we've tried too many times, just redirect to the feedback page
+    if (processingAttempts > MAX_PROCESSING_ATTEMPTS) {
+        console.log('Max processing attempts reached, redirecting to feedback page');
+        window.location.href = `/feedback/answer/${answerId}`;
+        return;
     }
     
     // Post to our new API endpoint to ensure feedback is generated
@@ -32,6 +54,7 @@ function processAnswerFeedback(answerId) {
     })
     .then(data => {
         console.log('Feedback processed:', data);
+        processingInProgress = false;
         
         // Update the feedback display if successful
         if (data.success && data.has_feedback) {
@@ -45,15 +68,30 @@ function processAnswerFeedback(answerId) {
             
             // Update performance metrics if on feedback page
             updatePerformanceMetrics(answerId);
+            
+            // Reset processing attempts counter
+            processingAttempts = 0;
         } else {
-            // If no feedback yet, wait a moment and retry
-            setTimeout(() => {
-                fetchAnswerDetails(answerId);
-            }, 2000);
+            // If no feedback yet, wait a moment and retry if we haven't exceeded the limit
+            if (processingAttempts < MAX_PROCESSING_ATTEMPTS) {
+                setTimeout(() => {
+                    fetchAnswerDetails(answerId);
+                }, 2000);
+            } else {
+                // If we've tried enough times, just redirect
+                window.location.href = `/feedback/answer/${answerId}`;
+            }
         }
     })
     .catch(error => {
         console.error('Error processing feedback:', error);
+        processingInProgress = false;
+        
+        // If we've tried enough times, just redirect
+        if (processingAttempts >= MAX_PROCESSING_ATTEMPTS) {
+            window.location.href = `/feedback/answer/${answerId}`;
+            return;
+        }
         
         // If there's an error, just refresh from the server
         setTimeout(() => {
@@ -64,6 +102,27 @@ function processAnswerFeedback(answerId) {
 
 // Fetch answer details from the API
 function fetchAnswerDetails(answerId) {
+    // Increment the processing attempt counter
+    processingAttempts++;
+    console.log(`Fetching answer details (attempt ${processingAttempts}/${MAX_PROCESSING_ATTEMPTS})`);
+    
+    // If we've tried too many times, just redirect
+    if (processingAttempts > MAX_PROCESSING_ATTEMPTS) {
+        console.log('Max attempts reached, redirecting to feedback page');
+        window.location.href = `/feedback/answer/${answerId}`;
+        return;
+    }
+    
+    // Show a loading indicator with attempt number
+    const feedbackElements = document.querySelectorAll('.chat-message.interviewer .message-content');
+    const lastFeedbackElement = feedbackElements[feedbackElements.length - 1];
+    
+    if (lastFeedbackElement) {
+        lastFeedbackElement.innerHTML = `
+            <p><span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating feedback... (Attempt ${processingAttempts}/${MAX_PROCESSING_ATTEMPTS})</p>
+        `;
+    }
+    
     fetch(`/api/answer/${answerId}`)
         .then(response => {
             if (!response.ok) {
@@ -73,6 +132,7 @@ function fetchAnswerDetails(answerId) {
         })
         .then(data => {
             console.log('Answer details fetched:', data);
+            processingInProgress = false;
             
             // Update the feedback display
             const feedbackElements = document.querySelectorAll('.chat-message.interviewer .message-content');
@@ -84,11 +144,19 @@ function fetchAnswerDetails(answerId) {
                     <p>${data.feedback}</p>
                     <p>${document.location.pathname.includes('next') ? 'Ready for the next question?' : 'That completes this session. Let\'s move on to the next part of the interview.'}</p>
                 `;
+                
+                // Reset the counter since we're successful
+                processingAttempts = 0;
             } else if (lastFeedbackElement) {
-                // Still no feedback, retry after a delay
-                setTimeout(() => {
-                    fetchAnswerDetails(answerId);
-                }, 3000);
+                // Still no feedback, retry after a delay if we haven't hit the limit
+                if (processingAttempts < MAX_PROCESSING_ATTEMPTS) {
+                    setTimeout(() => {
+                        fetchAnswerDetails(answerId);
+                    }, 3000);
+                } else {
+                    // If we've tried too many times, just redirect
+                    window.location.href = `/feedback/answer/${answerId}`;
+                }
             }
             
             // Update performance metrics if on feedback page
@@ -96,6 +164,18 @@ function fetchAnswerDetails(answerId) {
         })
         .catch(error => {
             console.error('Error fetching answer details:', error);
+            processingInProgress = false;
+            
+            // If we've hit the limit, redirect
+            if (processingAttempts >= MAX_PROCESSING_ATTEMPTS) {
+                window.location.href = `/feedback/answer/${answerId}`;
+                return;
+            }
+            
+            // Try again after a delay
+            setTimeout(() => {
+                fetchAnswerDetails(answerId);
+            }, 3000);
         });
 }
 
