@@ -202,14 +202,12 @@ class GeminiSpeechRecognition {
                     const inputEvent = new Event('input', { bubbles: true });
                     targetTextarea.dispatchEvent(inputEvent);
                     
-                    // Try to auto-submit after a delay
-                    setTimeout(() => {
-                        const form = targetTextarea.closest('form');
-                        if (form) {
-                            console.log('Auto-submitting form with Gemini transcript');
-                            form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
-                        }
-                    }, 5000);  // 5 seconds delay for auto-submit
+                    // Auto-submit immediately after receiving transcription
+                    const form = targetTextarea.closest('form');
+                    if (form) {
+                        console.log('Auto-submitting form with Gemini transcript');
+                        form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                    }
                 }
                 
                 // Display the raw transcription temporarily in the status
