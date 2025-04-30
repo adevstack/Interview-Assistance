@@ -1,26 +1,23 @@
 name = "ai-interview-prep"
-type = "python"
+type = "javascript"
 account_id = ""
 workers_dev = true
 compatibility_date = "2023-01-01"
-compatibility_flags = ["python_workers"]
+main = "./workers-site/index.js"
+node_compat = true
 
 [vars]
 FLASK_ENV = "production"
 
-# The binding to use for the SQLite database.
-# Adjust this for your actual database setup.
-[[d1_databases]]
-binding = "DB"
-database_name = "ai_interview_prep"
-database_id = ""
-
-# Main entrypoint for the Cloudflare Worker
+# Setup Python worker for our Flask application
 [build]
-command = ""
+command = "python download_nltk_data.py"
 
 [build.upload]
-format = "service-worker"
+format = "modules"
+dir = "workers-site"
+main = "./index.js"
+module_type = "esm"  # Use ESM to avoid the import.meta error
 
 # Route traffic based on path or hostname
 [[routes]]
@@ -36,6 +33,11 @@ SESSION_COOKIE_SECURE = "True"
 [env.production.vars]
 # These variables will be set from Cloudflare secrets
 DATABASE_URL = ""
+
+# Site configuration - static assets
+[site]
+bucket = "./app/static"
+entry-point = "workers-site"
 
 [triggers]
 crons = []

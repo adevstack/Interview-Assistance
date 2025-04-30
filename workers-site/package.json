@@ -1,0 +1,17 @@
+{
+  "name": "ai-interview-prep-worker",
+  "version": "1.0.0",
+  "description": "Worker for AI Interview Preparation Platform",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "cloudflare",
+    "workers"
+  ],
+  "dependencies": {
+    "@cloudflare/kv-asset-handler": "^0.3.0"
+  }
+}
