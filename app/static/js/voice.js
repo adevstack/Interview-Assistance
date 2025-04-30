@@ -3,12 +3,16 @@
  * - Captures all speech including controversial content
  * - Improved handling for when other audio is playing
  * - Restart capability when recognition ends unexpectedly
+ * - Auto-submit after silence for 7 seconds
+ * - Displays interim transcription in the text area
  */
 function initVoiceInput(toggleButton, targetTextarea, statusElement) {
     let recognition;
     let isRecording = false;
     let restartCount = 0;
     const MAX_RESTARTS = 5;
+    let lastSpeechTime = Date.now();
+    let quietTimeoutId = null;
     
     // First try to use our advanced hybrid speech recognition with Gemini support
     try {
@@ -49,54 +53,73 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
         recognition.audioThreshold = 0; // Set to lowest possible value
     }
     
-    // Set any other available properties to maximize permissiveness
-    // These are experimental and may not be supported in all browsers
+    // Try to disable profanity filter if possible
     try {
-        // @ts-ignore - These properties may not be in the type definitions
-        if (typeof recognition.profanityFilter !== 'undefined') {
-            recognition.profanityFilter = false;
-        }
+        recognition.profanityFilter = false;
     } catch (e) {
-        console.log('Ignored setting experimental speech recognition properties:', e);
+        console.warn('Could not disable profanity filter');
     }
     
-    // Handle speech recognition results with multiple alternatives
-    recognition.onresult = function(event) {
-        let interimTranscript = '';
-        let finalTranscript = '';
+    // Enhanced text cleaning with best transcript selection for controversial content
+    let finalTranscript = '';
+    let interimTranscript = '';
+    
+    // Function to check for quiet time and auto-submit
+    function checkForQuietTime() {
+        if (!isRecording) return;
         
-        // For debugging - log the entire results object
-        console.log('Full speech recognition results:', JSON.stringify(event.results));
+        const currentTime = Date.now();
+        const timeSinceLastSpeech = currentTime - lastSpeechTime;
+        
+        // If quiet for more than 7 seconds and we have some transcript, auto-submit
+        if (timeSinceLastSpeech > 7000 && targetTextarea && targetTextarea.value.trim().length > 0) {
+            console.log('Auto-submitting after quiet period:', timeSinceLastSpeech);
+            
+            // Auto-submit the form
+            const form = targetTextarea.closest('form');
+            if (form) {
+                // Stop recording first
+                stopRecording();
+                // Then submit the form
+                setTimeout(() => {
+                    form.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
+                }, 100);
+            }
+        } else {
+            // Check again in 1 second
+            quietTimeoutId = setTimeout(checkForQuietTime, 1000);
+        }
+    }
+    
+    // Special words to prioritize if multiple transcription alternatives exist
+    const priorityWords = [
+        { search: 'scammed', replace: 'scammed' },
+        { search: 'phishing', replace: 'phishing' },
+        { search: 'hacker', replace: 'hacker' },
+        { search: 'unsecured', replace: 'unsecured' },
+        { search: 'credentials', replace: 'credentials' },
+        { search: 'vulnerable', replace: 'vulnerable' }
+    ];
+    
+    recognition.onresult = function(event) {
+        // Reset last speech time when we get a result
+        lastSpeechTime = Date.now();
         
         for (let i = event.resultIndex; i < event.results.length; i++) {
-            // Check if we have multiple alternatives
-            const numAlternatives = event.results[i].length;
-            console.log(`Result ${i} has ${numAlternatives} alternatives`);
-            
-            // Try each alternative in order of priority, then confidence
+            // Find the best transcript from all alternatives
             let bestTranscript = '';
-            let bestConfidence = -1;
+            let bestConfidence = 0;
             let foundPreferredWord = false;
             
-            // Security/fraud-specific words to prioritize regardless of confidence
-            const priorityWords = [
-                {search: "scammed", priority: 1},
-                {search: "scammer", priority: 1},
-                {search: "phishing", priority: 1},
-                {search: "fraud", priority: 1},
-                {search: "cybersecurity", priority: 1},
-                {search: "attack", priority: 1}
-            ];
+            // If alternatives are available, try to find the best one
+            const numAlternatives = event.results[i].length || 1;
             
-            // Check all alternatives to find the best one
             for (let alt = 0; alt < numAlternatives; alt++) {
                 const currentTranscript = event.results[i][alt].transcript;
-                const currentConfidence = event.results[i][alt].confidence;
-                
-                console.log(`Alternative ${alt}: "${currentTranscript}" (confidence: ${currentConfidence})`);
-                
-                // Check if this alternative contains any priority words we want to favor
+                const currentConfidence = event.results[i][alt].confidence || 0.5;
                 let hasPriorityWord = false;
+                
+                // Check if this alternative contains any priority words
                 for (const priority of priorityWords) {
                     if (currentTranscript.toLowerCase().includes(priority.search)) {
                         console.log(`Found priority word "${priority.search}" in alternative ${alt}`);
@@ -158,7 +181,19 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
                 const cleanTranscript = bestTranscript.trim();
                 finalTranscript += cleanTranscript + ' ';
             } else {
-                interimTranscript += bestTranscript;
+                interimTranscript = bestTranscript;
+                
+                // Also display interim results in the textarea so the user can see what's being transcribed
+                if (targetTextarea) {
+                    // Store the current final transcript
+                    const currentFinalText = finalTranscript.trim();
+                    
+                    // Show both the final and interim text in the textarea
+                    targetTextarea.value = currentFinalText + (currentFinalText ? ' ' : '') + interimTranscript;
+                    
+                    // Set cursor to the end
+                    targetTextarea.scrollTop = targetTextarea.scrollHeight;
+                }
             }
         }
         
@@ -210,15 +245,8 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
                 };
             }
             
-            // Only add space if needed between existing text and new text
-            if (targetTextarea.value) {
-                const lastChar = targetTextarea.value.slice(-1);
-                if (lastChar !== ' ' && lastChar !== '\n') {
-                    targetTextarea.value += ' ';
-                }
-            }
-            
-            targetTextarea.value += cleanFinalTranscript;
+            // Clear any previous content and set the final transcript
+            targetTextarea.value = cleanFinalTranscript;
             
             // Simulate user input to trigger any input events
             const inputEvent = new Event('input', { bubbles: true });
@@ -321,6 +349,11 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
     function startRecording() {
         isRecording = true;
         restartCount = 0;
+        lastSpeechTime = Date.now(); // Reset the last speech time
+        
+        // Start the quiet time checker
+        if (quietTimeoutId) clearTimeout(quietTimeoutId);
+        quietTimeoutId = setTimeout(checkForQuietTime, 1000);
         
         try {
             recognition.start();
@@ -346,6 +379,12 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
     function stopRecording() {
         isRecording = false;
         
+        // Clear any quiet time timeout
+        if (quietTimeoutId) {
+            clearTimeout(quietTimeoutId);
+            quietTimeoutId = null;
+        }
+        
         try {
             recognition.stop();
             console.log('Speech recognition stopped');
@@ -357,5 +396,25 @@ function initVoiceInput(toggleButton, targetTextarea, statusElement) {
         toggleButton.classList.remove('btn-danger');
         toggleButton.classList.add('btn-outline-primary');
         statusElement.textContent = '';
+    }
+    
+    // Auto-start voice input after model speaks
+    if (typeof speechSynthesisManager !== 'undefined') {
+        const originalSpeak = speechSynthesisManager.speak;
+        
+        speechSynthesisManager.speak = function(text, callback) {
+            originalSpeak.call(speechSynthesisManager, text, function() {
+                // After the model finishes speaking, wait a moment and start recording
+                setTimeout(() => {
+                    if (!isRecording) {
+                        console.log('Auto-starting voice input after model speech');
+                        startRecording();
+                    }
+                }, 500);
+                
+                // Still call the original callback if provided
+                if (callback) callback();
+            });
+        };
     }
 }
