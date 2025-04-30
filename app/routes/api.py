@@ -140,8 +140,19 @@ def transcribe_audio_with_gemini(audio_file_path):
 def api_answer(answer_id):
     """API endpoint to get answer details for AJAX requests."""
     from app.models.answer import Answer
+    from app.utils.nlp_eval import evaluate_answer
     
     answer = Answer.query.get_or_404(answer_id)
+    
+    # If the answer doesn't have feedback yet, generate it now
+    if not answer.feedback:
+        current_app.logger.info(f"Auto-generating feedback for answer {answer_id}")
+        try:
+            evaluate_answer(answer.id)
+            # Refresh the answer object after evaluation
+            answer = Answer.query.get_or_404(answer_id)
+        except Exception as e:
+            current_app.logger.error(f"Error generating feedback: {e}")
     
     return jsonify({
         'id': answer.id,
@@ -157,3 +168,32 @@ def api_answer(answer_id):
         'improvement_suggestions': answer.improvement_suggestions,
         'created_at': answer.created_at.isoformat()
     })
+
+
+@api_bp.route('/process_answer/<int:answer_id>', methods=['POST'])
+def process_answer(answer_id):
+    """API endpoint to trigger answer evaluation and get feedback."""
+    from app.models.answer import Answer
+    from app.utils.nlp_eval import evaluate_answer
+    
+    answer = Answer.query.get_or_404(answer_id)
+    
+    # Generate feedback
+    try:
+        evaluate_answer(answer.id)
+        # Refresh the answer object after evaluation
+        answer = Answer.query.get(answer_id)
+        
+        return jsonify({
+            'success': True,
+            'answer_id': answer.id,
+            'feedback': answer.feedback,
+            'score': answer.score,
+            'has_feedback': answer.feedback is not None
+        })
+    except Exception as e:
+        current_app.logger.error(f"Error processing answer: {e}")
+        return jsonify({
+            'success': False,
+            'error': str(e)
+        }), 500
