@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Interview Prep - Static Demo</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark">
+        <div class="container">
+            <a class="navbar-brand" href="#"><i class="bi bi-robot me-2"></i>InterviewAI</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" href="#home">Home</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#dashboard">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#interview">Interview</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#feedback">Feedback</a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                            <i class="bi bi-person-circle me-1"></i> Demo User
+                        </a>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#">Profile</a></li>
+                            <li><a class="dropdown-item" href="#">Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item" href="#">Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Home/Landing Page -->
+    <section id="home" class="py-5 d-block">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-lg-6">
+                    <h1 class="display-4 fw-bold mb-4">Ace Your Next Interview with AI-Powered Practice</h1>
+                    <p class="lead mb-4">Prepare for interviews with realistic questions, receive instant feedback, and track your progress over time.</p>
+                    <button class="btn btn-primary btn-lg" onclick="showPage('dashboard')">Get Started</button>
+                    <button class="btn btn-outline-primary btn-lg ms-2">Learn More</button>
+                </div>
+                <div class="col-lg-6">
+                    <img src="https://images.unsplash.com/photo-1573497620053-ea5300f94f21?q=80&w=1740&auto=format&fit=crop" alt="Interview Preparation" class="img-fluid rounded shadow-lg">
+                </div>
+            </div>
+
+            <div class="row mt-5 pt-5">
+                <div class="col-12 text-center mb-4">
+                    <h2 class="fw-bold">Key Features</h2>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-accent mb-3"><i class="bi bi-list-check fs-2"></i></div>
+                            <h3 class="card-title h5">Role-Specific Questions</h3>
+                            <p class="card-text">Practice with questions tailored to your target role and experience level.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-accent mb-3"><i class="bi bi-mic fs-2"></i></div>
+                            <h3 class="card-title h5">Voice Response Analysis</h3>
+                            <p class="card-text">Speak your answers naturally and receive feedback on content and delivery.</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="text-accent mb-3"><i class="bi bi-graph-up fs-2"></i></div>
+                            <h3 class="card-title h5">Performance Tracking</h3>
+                            <p class="card-text">Track your progress over time and identify areas for improvement.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Dashboard -->
+    <section id="dashboard" class="py-5 d-none">
+        <div class="container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h1 class="mb-0">Dashboard</h1>
+                <button class="btn btn-primary" onclick="showPage('interview-setup')">New Interview</button>
+            </div>
+
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Total Interviews</h6>
+                            <h2 class="display-4 mb-0">8</h2>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> 25% from last month</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Average Score</h6>
+                            <h2 class="display-4 mb-0">76%</h2>
+                            <small class="text-success"><i class="bi bi-arrow-up"></i> 5% improvement</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Questions Answered</h6>
+                            <h2 class="display-4 mb-0">42</h2>
+                            <small class="text-muted">Across all sessions</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card stats-card">
+                        <div class="card-body">
+                            <h6 class="card-title">Practice Time</h6>
+                            <h2 class="display-4 mb-0">3.5h</h2>
+                            <small class="text-muted">Total speaking time</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-8 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Recent Interviews</h5>
+                        </div>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-hover mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th>Interview</th>
+                                            <th>Date</th>
+                                            <th>Role</th>
+                                            <th>Score</th>
+                                            <th>Status</th>
+                                            <th></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td>Technical Interview Practice #3</td>
+                                            <td>Apr 25, 2025</td>
+                                            <td>Software Engineer</td>
+                                            <td>85%</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Behavioral Questions for PM Role</td>
+                                            <td>Apr 20, 2025</td>
+                                            <td>Product Manager</td>
+                                            <td>78%</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td>System Design Practice</td>
+                                            <td>Apr 15, 2025</td>
+                                            <td>Software Engineer</td>
+                                            <td>72%</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Leadership Scenarios</td>
+                                            <td>Apr 10, 2025</td>
+                                            <td>Team Lead</td>
+                                            <td>80%</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                        </tr>
+                                        <tr>
+                                            <td>Technical Interview Prep</td>
+                                            <td>Apr 5, 2025</td>
+                                            <td>Software Engineer</td>
+                                            <td>68%</td>
+                                            <td><span class="badge bg-success">Completed</span></td>
+                                            <td><button class="btn btn-sm btn-outline-primary">View</button></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 mb-4">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Progress by Category</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Technical Questions</span>
+                                    <span>85%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Behavioral Questions</span>
+                                    <span>78%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-primary" role="progressbar" style="width: 78%"></div>
+                                </div>
+                            </div>
+                            <div class="mb-4">
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Situational Questions</span>
+                                    <span>72%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 72%"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="d-flex justify-content-between mb-1">
+                                    <span>Problem-Solving</span>
+                                    <span>68%</span>
+                                </div>
+                                <div class="progress">
+                                    <div class="progress-bar bg-warning" role="progressbar" style="width: 68%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interview Setup -->
+    <section id="interview-setup" class="py-5 d-none">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#" onclick="showPage('dashboard')">Dashboard</a></li>
+                    <li class="breadcrumb-item active">New Interview</li>
+                </ol>
+            </nav>
+            
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Set Up Your Practice Interview</h5>
+                        </div>
+                        <div class="card-body">
+                            <form>
+                                <div class="mb-3">
+                                    <label for="interviewTitle" class="form-label">Interview Title</label>
+                                    <input type="text" class="form-control" id="interviewTitle" value="Software Engineer Interview - May 2025">
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <label for="roleSelect" class="form-label">Target Role</label>
+                                    <select class="form-select" id="roleSelect">
+                                        <option selected>Software Engineer</option>
+                                        <option>Product Manager</option>
+                                        <option>Data Scientist</option>
+                                        <option>UX Designer</option>
+                                        <option>Marketing Specialist</option>
+                                        <option>Sales Representative</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="mb-4">
+                                    <label class="form-label d-block">Interview Categories</label>
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <div class="form-check card p-3">
+                                                <input class="form-check-input" type="checkbox" value="" id="technicalCheck" checked>
+                                                <label class="form-check-label fw-medium" for="technicalCheck">
+                                                    Technical Questions
+                                                </label>
+                                                <p class="text-muted small mb-0">Coding, system design, and technical knowledge</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check card p-3">
+                                                <input class="form-check-input" type="checkbox" value="" id="behavioralCheck" checked>
+                                                <label class="form-check-label fw-medium" for="behavioralCheck">
+                                                    Behavioral Questions
+                                                </label>
+                                                <p class="text-muted small mb-0">Past experiences and situations</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check card p-3">
+                                                <input class="form-check-input" type="checkbox" value="" id="situationalCheck">
+                                                <label class="form-check-label fw-medium" for="situationalCheck">
+                                                    Situational Questions
+                                                </label>
+                                                <p class="text-muted small mb-0">Hypothetical scenarios and problem-solving</p>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-check card p-3">
+                                                <input class="form-check-input" type="checkbox" value="" id="warmupCheck" checked>
+                                                <label class="form-check-label fw-medium" for="warmupCheck">
+                                                    Warm-up Questions
+                                                </label>
+                                                <p class="text-muted small mb-0">Background and introductory questions</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="d-grid">
+                                    <button type="button" class="btn btn-primary btn-lg" onclick="showPage('interview')">
+                                        Start Interview
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Interview Session -->
+    <section id="interview" class="py-5 d-none">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#" onclick="showPage('dashboard')">Dashboard</a></li>
+                    <li class="breadcrumb-item active">Interview Session</li>
+                </ol>
+            </nav>
+            
+            <div class="row justify-content-center">
+                <div class="col-xxl-8 col-xl-10">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <div>
+                                    <span class="badge bg-primary">Technical Question</span>
+                                    <span class="ms-2 text-muted">Question 3 of 10</span>
+                                </div>
+                                <div>
+                                    <div class="progress" style="width: 150px; height: 8px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 30%"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <h4 class="question-text mb-4">
+                                Explain the difference between various state management approaches in frontend development, and when you would choose one over another.
+                            </h4>
+                            
+                            <div id="voiceStatus" class="mb-4 text-center p-3">
+                                <div class="d-flex flex-column align-items-center gap-2">
+                                    <div class="microphone-status">
+                                        <i class="bi bi-mic-fill fs-1"></i>
+                                        <div class="wave-animation d-none">
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                            <span></span>
+                                        </div>
+                                    </div>
+                                    <div>Click to start speaking</div>
+                                </div>
+                            </div>
+                            
+                            <div id="transcription" class="mb-4 p-3 border rounded d-none">
+                                <p class="mb-0">
+                                    State management in frontend development refers to how we handle and organize the data that affects the UI of our application. There are several approaches, each with its own use cases. For smaller applications, local component state is often sufficient, using React's useState or component state in other frameworks. For medium-sized apps, context API provides a way to share state without prop drilling. Redux offers a centralized store with predictable state updates, making it suitable for complex applications with many state transitions. MobX provides a more reactive approach with less boilerplate. I would choose Redux for larger applications where debugging and time-travel are important, Context for smaller apps that still need global state, and local state for simple components. The decision depends on factors like application size, team familiarity, debugging needs, and performance considerations.
+                                </p>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-outline-danger">End Interview</button>
+                                <div>
+                                    <button class="btn btn-outline-secondary me-2">Skip Question</button>
+                                    <button class="btn btn-primary" onclick="showPage('feedback')">Submit Answer</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Feedback -->
+    <section id="feedback" class="py-5 d-none">
+        <div class="container">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="#" onclick="showPage('dashboard')">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="#" onclick="showPage('interview')">Interview Session</a></li>
+                    <li class="breadcrumb-item active">Answer Feedback</li>
+                </ol>
+            </nav>
+            
+            <div class="row justify-content-center">
+                <div class="col-xxl-10">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <h5 class="card-title mb-0">Answer Feedback</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row mb-4">
+                                <div class="col-md-4 text-center">
+                                    <div class="score-circle score-good mb-2">
+                                        <span class="score-text">78</span>
+                                    </div>
+                                    <h5>Overall Score</h5>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="progress-metrics">
+                                        <div class="metric-item">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Completeness</span>
+                                                <span>85%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 85%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Relevance</span>
+                                                <span>90%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-success" role="progressbar" style="width: 90%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Structure</span>
+                                                <span>70%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 70%"></div>
+                                            </div>
+                                        </div>
+                                        <div class="metric-item">
+                                            <div class="d-flex justify-content-between mb-1">
+                                                <span>Grammar</span>
+                                                <span>75%</span>
+                                            </div>
+                                            <div class="progress">
+                                                <div class="progress-bar bg-warning" role="progressbar" style="width: 75%"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5>Your Answer</h5>
+                                    <p>
+                                        State management in frontend development refers to how we handle and organize the data that affects the UI of our application. There are several approaches, each with its own use cases. For smaller applications, local component state is often sufficient, using React's useState or component state in other frameworks. For medium-sized apps, context API provides a way to share state without prop drilling. Redux offers a centralized store with predictable state updates, making it suitable for complex applications with many state transitions. MobX provides a more reactive approach with less boilerplate. I would choose Redux for larger applications where debugging and time-travel are important, Context for smaller apps that still need global state, and local state for simple components. The decision depends on factors like application size, team familiarity, debugging needs, and performance considerations.
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <h5>Feedback</h5>
+                                    <div class="alert alert-success">
+                                        <p class="mb-0">
+                                            <strong>Strengths:</strong> Your answer demonstrates a good understanding of state management approaches in frontend development. You correctly identified various options (local state, Context API, Redux, MobX) and explained their use cases. You also provided clear criteria for choosing between them based on application size and requirements.
+                                        </p>
+                                    </div>
+                                    <div class="alert alert-warning">
+                                        <p class="mb-0">
+                                            <strong>Areas for improvement:</strong> Your answer could benefit from more structure - consider using a clearer introduction, comparison points, and conclusion. Additionally, providing specific examples of when you've used different approaches would strengthen your response. You could also mention newer state management libraries like Zustand or Jotai to show awareness of evolving trends.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <h5>Grammar Issues</h5>
+                                    <div class="grammar-issues">
+                                        <p>No significant grammar issues detected. Your response maintains good sentence structure and proper use of technical terminology.</p>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-4">
+                                    <h5>Improvement Suggestions</h5>
+                                    <ul class="list-group">
+                                        <li class="list-group-item">Structure your answer with a clearer introduction and conclusion</li>
+                                        <li class="list-group-item">Add specific examples from your experience using these state management approaches</li>
+                                        <li class="list-group-item">Mention performance implications of different state management solutions</li>
+                                        <li class="list-group-item">Discuss newer state management libraries to demonstrate current knowledge</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            
+                            <div class="d-flex justify-content-between">
+                                <button class="btn btn-outline-secondary" onclick="showPage('interview')">Back to Interview</button>
+                                <button class="btn btn-primary" onclick="showPage('interview')">Next Question</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="py-4 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-0">© 2025 InterviewAI. All rights reserved.</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <a href="#" class="text-muted me-3">Privacy Policy</a>
+                    <a href="#" class="text-muted me-3">Terms of Service</a>
+                    <a href="#" class="text-muted">Contact</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
