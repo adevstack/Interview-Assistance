@@ -1,0 +1,197 @@
+AI Interview Platform - Design Specification
+Color System
+Background: #1a1b1e
+Surface: #2c2d30
+Surface Light: #3a3b3e
+Surface Dark: #242528
+Primary Text: #e4e6ea
+Muted Text: #9da2a8
+Accent Color: #3b82f6
+Success: #10b981
+Warning: #f59e0b
+Danger: #ef4444
+Typography
+Font Family: Inter
+Headings: 600 weight
+Body Text: Regular weight
+Line Height: 1.5
+Screen Designs
+1. Landing Page
+Header:
+
+Dark navbar with logo on left
+Navigation links: "Features", "How It Works", "Login", "Register"
+CTAs: "Get Started" primary button in accent color
+Hero Section:
+
+Headline: "Ace Your Next Interview with AI-Powered Preparation"
+Subheadline: "Practice with realistic questions, get instant feedback, and track your progress"
+CTA Button: "Start Practicing Now"
+Background: Dark gradient with subtle pattern
+Hero Image: Illustration of person at computer with AI assistant
+Features Section:
+
+3-column layout
+Feature 1: "Role-Specific Questions" with icon
+Feature 2: "Real-time Speech Recognition" with icon
+Feature 3: "Detailed Performance Analysis" with icon
+Each with brief description text
+Footer:
+
+Logo
+Links to pages
+Copyright information
+2. User Dashboard
+Top Navigation:
+
+Logo
+Dashboard links: "Home", "Interviews", "Progress", "Settings"
+User profile dropdown in top right
+Stats Overview:
+
+4 stats cards in a row
+"Total Interviews": Count with upward trend icon
+"Average Score": Percentage with icon
+"Questions Answered": Count with icon
+"Practice Time": Hours with icon
+Each card has subtle hover animation
+Recent Interviews:
+
+Table showing last 5 interviews
+Columns: Interview Title, Date, Role, Score, Status
+Action button to view details
+Progress Chart:
+
+Line chart showing score progression over time
+Tabs to filter by interview type
+Color-coded line matching accent color
+Quick Actions:
+
+"Start New Interview" primary button
+"Continue Last Session" secondary button
+"View All Results" text link
+3. Interview Setup
+Form Layout:
+Title: "Set Up Your Practice Interview"
+Input field: "Interview Title" (prefilled with generated title)
+Dropdown: "Role Selection" (Software Engineer, Product Manager, etc.)
+Category Selection: Cards for "Technical", "Behavioral", "Warmup", "Situational"
+"Start Interview" primary button
+4. Interview Interface
+Question Display:
+
+Current question in large text
+Question category label (Technical, Behavioral, etc.)
+Progress indicator showing question number out of total
+Voice Controls:
+
+Large microphone button (changes color based on state)
+Status text: "Click to start speaking", "Listening...", "Processing..."
+Waveform animation when recording
+Transcription Area:
+
+Real-time text appearing as user speaks
+Subtle animation for text appearing
+Preview of what's being transcribed
+Answer Controls:
+
+"Submit Answer" button (enabled when transcription is complete)
+"Skip Question" text link
+"End Interview" secondary button
+5. Feedback Screen
+Overall Score:
+
+Large circular progress indicator
+Score percentage in center
+Color changes based on score range (green, yellow, red)
+Detailed Metrics:
+
+4 metric cards in a grid
+"Completeness" with progress bar
+"Relevance" with progress bar
+"Structure" with progress bar
+"Grammar" with progress bar
+Each has score and brief explanation
+Feedback Text:
+
+Personalized feedback in card format
+Strengths section with bullet points
+Areas for improvement with bullet points
+Grammar Issues:
+
+Scrollable container
+List of grammar issues found
+Each item has issue type and suggestion
+Next Steps:
+
+"Next Question" primary button
+"Review Answer" secondary button
+"End Interview" text link
+6. Results Summary
+Interview Overview:
+
+Interview title and role
+Date and duration
+Overall score with circular indicator
+Performance trend compared to previous sessions
+Question Breakdown:
+
+Expandable cards for each question
+Question text and category
+Score for each question
+Option to view detailed feedback
+Performance Analysis:
+
+Radar chart showing scores across different metrics
+Comparison to average scores for similar roles
+Key strengths highlighted with success color
+Areas for improvement highlighted with warning color
+Improvement Suggestions:
+
+AI-generated tips for improving performance
+Related resources or practice questions
+Option to schedule follow-up practice
+Component Library
+Buttons
+Primary: Filled blue (#3b82f6), white text, 8px border radius
+Secondary: Outline, blue border, blue text, 8px border radius
+Danger: Red fill (#ef4444), white text, 8px border radius
+Text Link: No background, blue text, underline on hover
+Cards
+Standard Card: Dark surface color (#2c2d30), 8px border radius, subtle shadow
+Interactive Card: Same as standard but with hover state (slight lift)
+Metric Card: Surface color with accent border, metric value prominent
+Form Elements
+Text Input: Dark input (#3a3b3e), light text, accent focus state
+Dropdown: Same style as text input with dropdown icon
+Radio/Checkbox: Custom styled with accent color for selected state
+Status Indicators
+Progress Bar: Accent color fill, dark background, rounded ends
+Score Circle: Circular border with percentage fill based on value
+Recording Status: Animated indicator with pulsing effect when active
+Responsive Design Specifications
+Desktop (1200px+)
+Full 3-column layout for features
+Dashboard shows all stats cards in a row
+Side-by-side layout for feedback metrics and text
+Tablet (768px - 1199px)
+2-column layout for features
+Dashboard shows 2x2 grid for stats cards
+Stacked layout for feedback components with adequate spacing
+Mobile (320px - 767px)
+Single column layout throughout
+Condensed header with hamburger menu
+Simplified voice interface with larger tap targets
+Vertically stacked metrics cards
+Interactive Elements & States
+Voice Recognition Flow
+Initial state: Microphone button with "Start Speaking" text
+On click: Button changes to active state, animation begins
+While recording: Waveform visualization, real-time text appears
+Processing state: Loading indicator, button disabled
+Complete state: Full transcript visible, submit button enabled
+Answer Submission Flow
+Submit button disabled until answer recorded
+On submit: Loading state with "Analyzing your answer..."
+Analysis complete: Transition to feedback screen with score animation
+Score circles animate from 0 to final value
