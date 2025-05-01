@@ -1,0 +1,82 @@
+
+// Design System Page
+Frame: 🎨 Design System
+- Colors
+  • Background (#1a1b1e)
+  • Surface (#2c2d30)  
+  • Surface Light (#3a3b3e)
+  • Surface Dark (#242528)
+  • Primary Text (#e4e6ea)
+  • Muted Text (#9da2a8)
+  • Accent Color (#3b82f6)
+  • Success (#10b981)  
+  • Warning (#f59e0b)
+  • Danger (#ef4444)
+
+Typography:
+Font: Inter
+- H1: Inter 600 / 36px
+- H2: Inter 600 / 30px  
+- H3: Inter 600 / 24px
+- Body: Inter Regular / 16px
+- Small: Inter Regular / 14px
+Line Height: 1.5
+
+// Components Page
+Frame: 🧩 Components
+- Buttons
+  • Primary Button
+  • Secondary Button 
+  • Danger Button
+  • Text Link
+- Cards
+  • Standard Card
+  • Interactive Card
+  • Metric Card
+  • Feature Card
+- Forms
+  • Text Input
+  • Dropdown
+  • Radio/Checkbox
+- Status
+  • Progress Bar
+  • Score Circle
+  • Recording Status
+
+// Pages Page 
+Frame: 📱 Pages
+- Landing Page (1440px)
+  • Hero Section
+  • Features Grid
+  • Footer
+- Dashboard (1440px)
+  • Stats Cards
+  • Recent Interviews
+  • Progress Chart
+- Interview Setup (1440px)
+  • Form Layout
+  • Role Selection
+  • Category Cards
+- Interview Interface (1440px)
+  • Question Display
+  • Voice Controls
+  • Answer Area
+- Feedback Screen (1440px)
+  • Score Display
+  • Metrics Grid
+  • Feedback Cards
+- Results Summary (1440px)
+  • Performance Overview
+  • Question Breakdown
+  • Analysis Charts
+
+// Responsive Variants
+Frame: 📱 Responsive
+- Tablet (768px)
+  • Navigation
+  • Cards Grid
+  • Feature Layout
+- Mobile (320px)
+  • Menu
+  • Stacked Layout
+  • Voice Interface
