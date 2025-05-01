@@ -22,7 +22,7 @@ def index():
 def register():
     if current_user.is_authenticated:
         return redirect(url_for('interview.dashboard'))
-        
+
     if request.method == 'POST':
         username = request.form['username']
         email = request.form['email']
@@ -64,7 +64,7 @@ def register():
         {'id': 'customer_support', 'name': 'Customer Support'},
         {'id': 'manager', 'name': 'Manager'}
     ]
-    
+
     return render_template('register.html', roles=roles)
 
 
@@ -72,7 +72,7 @@ def register():
 def login():
     if current_user.is_authenticated:
         return redirect(url_for('interview.dashboard'))
-        
+
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -93,7 +93,7 @@ def login():
                 next_page = url_for('interview.dashboard')
             flash('Logged in successfully!', 'success')
             return redirect(next_page)
-            
+
         flash(error, 'danger')
 
     return render_template('login.html')
@@ -130,10 +130,10 @@ def profile():
         if error is None:
             current_user.email = email
             current_user.role = role
-            
+
             if new_password:
                 current_user.set_password(new_password)
-                
+
             db.session.commit()
             flash('Profile updated successfully.', 'success')
             return redirect(url_for('auth.profile'))
@@ -151,5 +151,9 @@ def profile():
         {'id': 'customer_support', 'name': 'Customer Support'},
         {'id': 'manager', 'name': 'Manager'}
     ]
-    
+
     return render_template('profile.html', user=current_user, roles=roles)
+
+@bp.route('/demo')
+def demo():
+    return render_template('demo.html')

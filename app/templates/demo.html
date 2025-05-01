@@ -1,0 +1,77 @@
+
+{% extends 'base.html' %}
+
+{% block title %}Demo - AI Interview Prep{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-5">
+        <div class="col-md-8 mx-auto text-center">
+            <h1 class="display-4 mb-3">AI Interview Preparation Platform</h1>
+            <p class="lead">Practice interviews with AI-powered feedback and analysis</p>
+            <div class="mt-4">
+                <a href="{{ url_for('auth.register') }}" class="btn btn-primary btn-lg me-3">Try it Free</a>
+                <a href="#features" class="btn btn-outline-primary btn-lg">Learn More</a>
+            </div>
+        </div>
+    </div>
+
+    <div id="features" class="row g-4 py-5">
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-robot fa-2x text-primary mb-3"></i>
+                    <h3>AI-Powered Feedback</h3>
+                    <p>Get instant, detailed feedback on your interview responses using advanced NLP and Gemini AI.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-microphone fa-2x text-primary mb-3"></i>
+                    <h3>Voice Recognition</h3>
+                    <p>Practice speaking with voice input support and get feedback on your verbal communication.</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card h-100">
+                <div class="card-body">
+                    <i class="fas fa-chart-line fa-2x text-primary mb-3"></i>
+                    <h3>Progress Tracking</h3>
+                    <p>Monitor your improvement with detailed analytics and performance metrics.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row py-5">
+        <div class="col-md-6">
+            <h2>Key Features</h2>
+            <ul class="list-unstyled">
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Role-specific interview questions</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Real-time grammar and sentiment analysis</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Comprehensive answer evaluation</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Personalized improvement suggestions</li>
+                <li class="mb-3"><i class="fas fa-check text-success me-2"></i>Multiple interview categories</li>
+            </ul>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-body">
+                    <h3>Sample Interview Question</h3>
+                    <p class="text-muted">Technical Interview - Software Engineer</p>
+                    <p>"Can you explain how you would design a scalable web application?"</p>
+                    <div class="mt-3">
+                        <button class="btn btn-primary" disabled>
+                            <i class="fas fa-microphone me-2"></i>Start Answer
+                        </button>
+                        <small class="d-block mt-2 text-muted">Sign up to try the full experience!</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
